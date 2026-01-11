@@ -1,0 +1,106 @@
+name: Bug Report
+description: Report an error, inconsistency, or problem in the OMSS specification
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug in the OMSS specification!
+
+        Please fill out this form to help us understand and address the issue.
+
+  - type: dropdown
+    id: spec-version
+    attributes:
+      label: OMSS Version
+      description: Which version of the specification is affected?
+      options:
+        - v1.0 (latest)
+        - draft
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      description: Which part of the specification has the issue?
+      options:
+        - Endpoints (API paths)
+        - Request/Response Schemas
+        - Error Handling
+        - Identifier Strategy
+        - OpenAPI Specification
+        - Documentation
+        - Examples
+        - Other
+      multiple: true
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: |
+        Example: The movie endpoint schema shows 'title' as optional, but the documentation says it's required.
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location in Specification
+      description: Where exactly is the issue located?
+      placeholder: |
+        Example:
+        - File: spec/v1.0/omss-v1.0.md
+        - Section: "3.1 Movie Endpoint Response Schema"
+        - Line: 145
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should the specification say or do?
+      placeholder: The 'title' field should be marked as required in both the schema and documentation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What does the specification currently say or do?
+      placeholder: The schema shows 'title' as optional, creating ambiguity.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: How does this bug affect implementers or users?
+      placeholder: |
+        Example: Backend developers may implement the endpoint incorrectly, leading to inconsistent responses across OMSS-compliant services.
+
+  - type: textarea
+    id: proposed-fix
+    attributes:
+      label: Proposed Solution (Optional)
+      description: If you have a suggestion for how to fix this, please share it
+      placeholder: Mark 'title' as required in the schema definition and add validation rules.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/omss-spec/omss-spec/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

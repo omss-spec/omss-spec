@@ -1,0 +1,115 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+.vs/
+
+# Node.js (if using for tooling/validation)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+.yarn/
+dist/
+build/
+
+# Python (if using for tooling/validation)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Ruby (if using for tooling/validation)
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.bundle/
+vendor/bundle
+
+# Documentation Build Output
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.docusaurus/
+.cache/
+public/
+
+# Generated Files
+*.log
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+
+# Test Coverage
+coverage/
+.nyc_output/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Compiled/Minified Files
+*.min.js
+*.min.css
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Secrets (just in case)
+secrets.yml
+secrets.json
+*.pem
+*.key
+*.cert
+
+# Misc
+.cache
+.temp
+.tmp

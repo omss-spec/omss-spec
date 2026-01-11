@@ -1,0 +1,136 @@
+name: Feature Request
+description: Propose a new feature or enhancement to the OMSS specification
+title: "[Feature]: "
+labels: ["enhancement", "needs-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement to OMSS!
+
+        Please note that major changes may require an RFC (Request for Comments) in Discussions before being accepted.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What kind of feature are you proposing?
+      options:
+        - New endpoint
+        - New field/parameter
+        - Schema enhancement
+        - Error code addition
+        - Documentation improvement
+        - Best practice guideline
+        - Breaking change (requires v2.0)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Why is it needed?
+      placeholder: |
+        Example: Currently, OMSS doesn't provide a way to indicate HDR/Dolby Vision support for video sources. This makes it difficult for frontends to filter high-quality streams or inform users about available formats.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed feature in detail
+      placeholder: |
+        Example: Add an optional 'videoFeatures' object to the source schema:
+
+        ```json
+        "videoFeatures": {
+          "hdr": true,
+          "hdrFormat": "dolby-vision",
+          "codec": "hevc"
+        }
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Provide specific examples of how this feature would be used
+      placeholder: |
+        Example:
+        1. A frontend could filter sources to show only HDR-compatible streams
+        2. Smart TVs could prioritize Dolby Vision sources when available
+        3. Users could see which streaming quality features are supported
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered alternative approaches? Why is your proposal better?
+      placeholder: |
+        Example: Considered adding quality levels (SD/HD/4K) but that doesn't capture HDR/codec information adequately.
+
+  - type: dropdown
+    id: breaking-change
+    attributes:
+      label: Breaking Change?
+      description: Would this feature break existing OMSS v1.0 implementations?
+      options:
+        - "No - backward compatible"
+        - "Yes - requires v2.0"
+        - "Uncertain"
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Implementation Impact
+      description: How would this affect backend and frontend implementations?
+      placeholder: |
+        Example:
+        - Backend: Optional field, existing implementations continue working
+        - Frontend: Can gradually adopt the new field when backends provide it
+        - Migration: No changes required for v1.0 compliance
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example Implementation (Optional)
+      description: Show example request/response or code if applicable
+      render: json
+      placeholder: |
+        {
+          "sources": [
+            {
+              "id": "src_provider_001",
+              "file": "https://example.com/stream.m3u8",
+              "type": "hls",
+              "quality": "2160p",
+              "videoFeatures": {
+                "hdr": true,
+                "hdrFormat": "dolby-vision",
+                "codec": "hevc"
+              }
+            }
+          ]
+        }
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to ensure this isn't a duplicate
+          required: true
+        - label: I have considered backward compatibility
+          required: true
+        - label: I am willing to help document this feature if accepted
+          required: false
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/omss-spec/omss-spec/blob/main/CODE_OF_CONDUCT.md)
+          required: true

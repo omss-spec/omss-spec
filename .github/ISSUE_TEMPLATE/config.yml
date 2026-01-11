@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/omss-spec/omss-spec/discussions
+    about: Ask questions, share ideas, and discuss OMSS with the community
+  - name: 📖 Documentation (coming soon)
+    url: https://github.com/omss-spec/omss-spec/tree/main/docs
+    about: Read the implementation guides and documentation

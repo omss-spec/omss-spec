@@ -1,0 +1,110 @@
+name: Specification Clarification
+description: Ask for clarification about unclear or ambiguous parts of the OMSS specification
+title: "[Question]: "
+labels: ["question", "documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help understanding the OMSS specification?
+
+        Use this template to ask for clarification about any unclear or ambiguous parts.
+
+        **Note**: For general discussion, consider using [GitHub Discussions](https://github.com/omss-spec/omss-spec/discussions) instead.
+
+  - type: dropdown
+    id: spec-version
+    attributes:
+      label: OMSS Version
+      description: Which version are you asking about?
+      options:
+        - v1.0 (latest)
+        - draft
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic Area
+      description: Which part of the specification needs clarification?
+      options:
+        - Endpoints (API paths)
+        - Request Parameters
+        - Response Schemas
+        - Error Handling
+        - Identifier Strategy (TMDB/IMDb/etc)
+        - Source Types (HLS/MP4/DASH)
+        - Subtitle Formats
+        - Caching/Metadata
+        - Compliance Requirements
+        - Authentication/Security
+        - Best Practices
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Specification Location
+      description: Where in the specification is the unclear part?
+      placeholder: |
+        Example:
+        - Document: spec/v1.0/omss-v1.0.md
+        - Section: "4.2 Error Response Format"
+        - Line/Paragraph: Near line 230
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What specifically is unclear or confusing?
+      placeholder: |
+        Example: The specification says error codes should be "machine-readable strings" but doesn't define a format. Should they be SCREAMING_SNAKE_CASE, kebab-case, or something else? Are there any restrictions on special characters?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why do you need this clarification? What are you trying to implement?
+      placeholder: |
+        Example: I'm implementing an OMSS-compliant backend and need to know the exact error code format to ensure consistency across implementations.
+
+  - type: textarea
+    id: interpretation
+    attributes:
+      label: Your Current Interpretation (Optional)
+      description: How are you currently understanding this part of the spec?
+      placeholder: |
+        Example: I'm currently using SCREAMING_SNAKE_CASE like "INVALID_ID" and "NOT_FOUND", but I want to confirm this matches the intended standard.
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Priority
+      description: How urgently do you need clarification?
+      options:
+        - Low - Just curious
+        - Medium - Planning implementation
+        - High - Blocked on this for active implementation
+      default: 0
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have read the full specification document
+          required: true
+        - label: I have checked existing issues for similar questions
+          required: true
+        - label: I have searched the documentation for answers
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/omss-spec/omss-spec/blob/main/CODE_OF_CONDUCT.md)
+          required: true
