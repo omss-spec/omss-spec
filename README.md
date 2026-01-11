@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://avatars.githubusercontent.com/u/254310882" alt="OMSS Logo" width="150"/>
+  <img src="https://repository-images.githubusercontent.com/1132306794/6985c06b-8e53-41eb-9148-a81612fb6ac2" alt="OMSS Logo" />
 
 # Open Media Streaming Specification (OMSS)
 
@@ -12,17 +12,19 @@
 </div>
 
 > [!CAUTION]
-> This is a draft specification and subject to change. We have not published a stable version yet. 
+> This is a draft specification and subject to change. We have not published a stable version yet.
 
 ## 🎯 What Problem Does OMSS Solve?
 
 Today, every streaming backend has its own custom API format. Frontends must write custom integration code for each backend, creating:
+
 - 🔴 Fragmentation across implementations
 - 🔴 Duplicated integration effort
 - 🔴 Difficult backend switching
 - 🔴 Limited ecosystem growth
 
 **OMSS standardizes** endpoint paths, request parameters, response schemas, and error handling so that:
+
 - ✅ **Write once, work everywhere**: One frontend integration for all backends
 - ✅ **User choice**: Easy to switch between backend providers
 - ✅ **Ecosystem growth**: Clear standards encourage more implementations
@@ -114,6 +116,7 @@ GET /                                             # API info and health check
 ## 🤝 Contributing
 
 We welcome contributions! Please see:
+
 - **[Contributing Guide](CONTRIBUTING.md)** - How to contribute
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** - Community guidelines
 - **[GitHub Discussions](https://github.com/omss-foundation/specification/discussions)** - Ask questions, share ideas
@@ -138,12 +141,14 @@ We welcome contributions! Please see:
 ## 📊 Compliance
 
 To be OMSS v1.0 compliant, a backend must:
+
 - ✅ Implement required endpoints (`/v1/movies/{id}`, `/v1/tv/{id}/...`)
 - ✅ Return responses matching the specified schemas
 - ✅ Use standard error codes and format
 - ✅ Support TMDB IDs as primary identifier
 
 Optional features (recommended but not required):
+
 - Search endpoint
 - Caching metadata
 - Multiple identifier support
