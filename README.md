@@ -1,6 +1,8 @@
 <div align="center">
+  
+  <img src="https://repository-images.githubusercontent.com/1132306794/6985c06b-8e53-41eb-9148-a81612fb6ac2" alt="OMSS Logo" />
 
-# Open Media Streaming Specification (/spec/v1.0/omss)
+# Open Media Streaming Specification
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](/spec/v1.0/omss-v1.0.md)
@@ -16,7 +18,7 @@
 
 ## 🎯 What is OMSS?
 
-**OMSS (Open Media Streaming Specification)** is an open standard that defines how streaming backends expose movies, TV episodes, sources, and subtitles through a unified REST API.
+### **OMSS (Open Media Streaming Specification)** is an open standard that defines how streaming backends expose movies, TV episodes, sources, and subtitles through a unified REST API.
 
 ### The Problem
 
