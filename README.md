@@ -1,161 +1,316 @@
 <div align="center">
-  <img src="https://repository-images.githubusercontent.com/1132306794/6985c06b-8e53-41eb-9148-a81612fb6ac2" alt="OMSS Logo" />
 
-# Open Media Streaming Specification (OMSS)
+# Open Media Streaming Specification (/spec/v1.0/omss)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](spec/v1.0/)
-[![Standard](https://img.shields.io/badge/standard-OMSS-orange.svg)](https://omss.dev)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](/spec/v1.0/omss-v1.0.md)
+[![Specification](https://img.shields.io/badge/spec-OMSS-orange.svg)](https://github.com/omss-spec/omss-spec)
 
-**OMSS** is an open standard that defines a unified REST API specification for streaming media backends. It enables any frontend (web, mobile, desktop) to seamlessly work with any OMSS-compliant backend.
+**A standardized REST API specification for streaming media backends**
+
+[Specification](/spec/v1.0/omss-v1.0.md) · [OpenAPI](/spec/v1.0/omss-openapi.yml) · [Contributing](CONTRIBUTING.md) · [Discussions](https://github.com/omss-spec/omss-spec/discussions)
 
 </div>
 
-> [!CAUTION]
-> This is a draft specification and subject to change. We have not published a stable version yet.
+---
 
-## 🎯 What Problem Does OMSS Solve?
+## 🎯 What is OMSS?
 
-Today, every streaming backend has its own custom API format. Frontends must write custom integration code for each backend, creating:
+**OMSS (Open Media Streaming Specification)** is an open standard that defines how streaming backends expose movies, TV episodes, sources, and subtitles through a unified REST API.
 
-- 🔴 Fragmentation across implementations
-- 🔴 Duplicated integration effort
-- 🔴 Difficult backend switching
-- 🔴 Limited ecosystem growth
+### The Problem
 
-**OMSS standardizes** endpoint paths, request parameters, response schemas, and error handling so that:
+Every streaming backend has custom API formats:
 
-- ✅ **Write once, work everywhere**: One frontend integration for all backends
-- ✅ **User choice**: Easy to switch between backend providers
-- ✅ **Ecosystem growth**: Clear standards encourage more implementations
-- ✅ **Interoperability**: Any OMSS frontend + any OMSS backend = it just works
+- ❌ Frontends rewrite integration code for each backend
+- ❌ Users can't easily switch backends
+- ❌ No interoperability between implementations
+- ❌ Fragmented ecosystem slows innovation
 
-## 📋 Specification Overview
+### The Solution
+
+**OMSS standardizes** endpoints, request/response formats, and error handling:
+
+- ✅ **Write once, work everywhere** — One frontend works with any OMSS backend
+- ✅ **User choice** — Switch backends without frontend changes
+- ✅ **Ecosystem growth** — Clear standard encourages more implementations
+- ✅ **True interoperability** — Any OMSS frontend + any OMSS backend = it just works
+
+---
+
+## 📖 Specification
+
+**Current Version:** [OMSS v1.0.0](/spec/v1.0/omss-v1.0.md) (Released January 15, 2026)
 
 ### Core Endpoints
 
-```
-GET /v1/movies/{tmdbId}                           # Get movie streaming sources
-GET /v1/tv/{tmdbId}/seasons/{season}/episodes/{episode}  # Get TV episode sources
-GET /v1/search?query={query}&type={type}          # Search for content (optional)
-GET /                                             # API info and health check
+```http
+GET /v1/movies/{id}                                 # Movie streaming sources
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}            # TV episode streaming sources
+GET /v1/proxy?data={base64url_encoded_json}         # Proxy to upstream providers
+GET /v1/refresh/{sourceId}                          # Invalidate cache for sources
+GET / or /v1 or /v1/health                          # Health check
 ```
 
 ### Key Features
 
-- **Standardized Response Format**: Consistent JSON structure across all implementations
-- **Multi-Source Support**: Returns multiple streaming sources per content item
-- **Subtitle Support**: Standardized subtitle format and language codes
-- **Error Handling**: Unified error response schema with clear error codes
-- **Identifier Strategy**: TMDB as primary ID with support for IMDb, TVDB
-- **Metadata Support**: Optional caching info, content metadata, source quality
-- **Version Control**: URL-based versioning (`/v1/`, `/v2/`, etc.)
+- **TMDB-based identifiers** — Movies and TV shows identified by TMDB IDs
+- **Proxy-based delivery** — All source URLs routed through backend proxy for header injection
+- **Multi-source support** — Multiple streaming providers per content item
+- **Multi-language audio** — Audio tracks with language codes and labels
+- **Subtitle support** — VTT, SRT, ASS, SSA formats with language labels
+- **Quality metadata** — Resolution info (1080p, 720p, etc.) with inference support
+- **Diagnostic reporting** — Warnings for partial scrapes, inferred metadata
+- **Expiration tracking** — `expiresAt` timestamp for cache management
+- **Standardized errors** — Machine-readable error codes with trace IDs
+- **URL versioning** — `/v1/` prefix for future compatibility
 
-## 📖 Documentation
-
-- **[Full Specification (v1.0)](spec/v1.0/omss-v1.0.md)** - Human-readable specification
-- **[OpenAPI Spec (v1.0)](spec/v1.0/omss-v1.0.yaml)** - Machine-readable API definition
-- **[Implementation Guide](docs/implementation-guide.md)** - How to build OMSS-compliant backends
-- **[Architecture Overview](docs/architecture.md)** - Design principles and patterns
-- **[Identifier Design](docs/identifier-design.md)** - ID strategy and best practices
-- **[Migration Guide](docs/migration-guide.md)** - Upgrading between OMSS versions
+---
 
 ## 🚀 Quick Start
 
 ### For Backend Developers
 
-1. Read the [full specification](spec/v1.0/omss-v1.0.md)
-2. Review [example responses](examples/)
-3. Check the [reference implementation](https://github.com/omss-foundation/reference-implementation)
-4. Implement required endpoints
-5. Test compliance with [validation suite](https://github.com/omss-foundation/compliance-tests)
+**Implement an OMSS-compliant backend:**
+
+1. Read the [full specification](/spec/v1.0/omss-v1.0.md)
+2. Review the [OpenAPI spec](/spec/v1.0/omss-openapi.yml)
+3. Implement the 4 required endpoints
+4. Return responses matching the schemas
+5. Use proxy paths for all source/subtitle URLs
+
+**Minimum compliance requirements:**
+
+- ✅ `GET /v1/movies/{id}` returns `SourceResponse`
+- ✅ `GET /v1/tv/{id}/seasons/{s}/episodes/{e}` returns `SourceResponse`
+- ✅ `GET /v1/proxy?data=...` proxies upstream requests
+- ✅ `GET /` or `/v1` or `/v1/health` returns backend info
+- ✅ All errors return `ErrorResponse` with `code`, `message`, `traceId`
+- ✅ HTTPS in production (HTTP allowed for localhost only)
 
 ### For Frontend Developers
 
-1. Review [OpenAPI specification](spec/v1.0/omss-v1.0.yaml)
-2. See [example responses](examples/)
-3. Use [client libraries](https://github.com/omss-foundation/client-libraries) (optional)
-4. Connect to any OMSS-compliant backend
+**Integrate with any OMSS backend:**
+
+1. Review the [OpenAPI specification](/spec/v1.0/omss-openapi.yml)
+2. Point your app to an OMSS backend URL
+3. Call `/v1/movies/{id}` or `/v1/tv/{id}/seasons/{s}/episodes/{e}`
+4. Parse `SourceResponse` and extract `sources` array
+5. Play sources using the `url` field (proxy paths)
+6. Load `subtitles` if available
+
+**Frontend benefits:**
+
+- One integration works with all OMSS backends
+- Users can configure/switch backends without app updates
+- Standardized error handling across backends
+
+---
 
 ## 📦 Example Response
 
+**Request:**
+
+```http
+GET /v1/movies/155 HTTP/1.1
+Host: api.example.com
+```
+
+**Response:**
+
 ```json
 {
-  "status": "success",
-  "media": {
-    "id": "155",
-    "type": "movie",
-    "title": "The Dark Knight",
-    "year": 2008,
-    "identifiers": {
-      "tmdb": "155",
-      "imdb": "tt0468569"
-    }
-  },
-  "sources": [
-    {
-      "id": "src_provider_001",
-      "file": "https://example.com/stream.m3u8",
-      "type": "hls",
-      "quality": "1080p",
-      "language": "en",
-      "provider": "ExampleProvider"
-    }
-  ],
-  "subtitles": [
-    {
-      "id": "sub_en_001",
-      "url": "https://example.com/subs.vtt",
-      "language": "en",
-      "format": "vtt"
-    }
-  ]
+    "sourceId": "bdfa40a7-a468-461c-8563-7a0c165f252c",
+    "expiresAt": "2026-01-15T18:00:00Z",
+    "sources": [
+        {
+            "id": "src_001",
+            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
+            "type": "hls",
+            "quality": "1080p",
+            "audioTracks": [
+                {
+                    "language": "en",
+                    "label": "English",
+                    "default": true
+                }
+            ],
+            "provider": {
+                "id": "prov_1",
+                "name": "Provider One"
+            }
+        }
+    ],
+    "subtitles": [
+        {
+            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D",
+            "label": "English",
+            "format": "vtt"
+        }
+    ],
+    "diagnostics": []
 }
 ```
 
+---
+
+## 📋 Documentation
+
+- **[OMSS v1.0 Specification](/spec/v1.0/omss-v1.0.md)** — Full human-readable spec
+- **[OpenAPI Specification](/spec/v1.0/omss-openapi.yml)** — Machine-readable API definition (Swagger/Redoc compatible)
+- **[Contributing Guide](CONTRIBUTING.md)** — How to propose changes
+- **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines
+- **[Security Policy](SECURITY.md)** — Reporting vulnerabilities
+
+---
+
+## 🏗️ Architecture
+
+### How OMSS Decouples Frontends and Backends
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    OMSS v1.0 Standard                   │
+│              (Open Specification Document)              │
+└─────────────────────────────────────────────────────────┘
+                          ▲
+          ┌───────────────┼───────────────┐
+          │               │               │
+          ▼               ▼               ▼
+    ┌──────────┐    ┌──────────┐    ┌──────────┐
+    │Backend A │    │Backend B │    │Backend C │ <-- Can be open or closed source
+    │(scrapers)│    │(scrapers)│    │(scrapers)│     can have different implementations/technologies
+    └──────────┘    └──────────┘    └──────────┘
+          ▲               ▲               ▲
+          └───────────────┼───────────────┘
+                          │
+          ┌───────────────┴───────────────┐
+          │                               │
+          ▼                               ▼
+    ┌──────────┐                    ┌──────────┐
+    │Frontend 1│                    │Frontend 2│ <-- Frontends can now work with any OMSS backend
+    │ (Web UI) │                    │(Mobile)  │     since they all follow the same spec!!🥳
+    └──────────┘                    └──────────┘
+```
+
+**Key Benefits:**
+
+- Backends implement OMSS spec → any frontend works
+- Frontends implement OMSS client → any backend works
+- Users choose their preferred backend in app settings
+- Innovation happens independently on both sides
+
+---
+
 ## 🤝 Contributing
 
-We welcome contributions! Please see:
-
-- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute
-- **[Code of Conduct](CODE_OF_CONDUCT.md)** - Community guidelines
-- **[GitHub Discussions](https://github.com/omss-foundation/specification/discussions)** - Ask questions, share ideas
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ### Ways to Contribute
 
-- 📝 Improve documentation
-- 🐛 Report issues or ambiguities in the spec
-- 💡 Propose new features via RFCs
-- 🔧 Build OMSS-compliant implementations
-- 🌍 Translate documentation
-- ⭐ Star the repo and spread the word
+- 📝 Improve documentation and clarify ambiguities
+- 🐛 Report issues or unclear sections in the spec
+- 💡 Propose new features via GitHub Discussions
+- 🔧 Build OMSS-compliant backends or frontends
+- 🌍 Translate documentation to other languages
+- ⭐ Star the repo and share with others
 
-## 🏗️ OMSS Ecosystem
+### Proposing Changes
 
-- **[Reference Implementation](https://github.com/omss-foundation/reference-implementation)** - Example backend
-- **[Compliance Tests](https://github.com/omss-foundation/compliance-tests)** - Validate your implementation
-- **[Client Libraries](https://github.com/omss-foundation/client-libraries)** - SDKs for various languages
-- **[Backend Registry](https://github.com/omss-foundation/registry)** - Directory of OMSS backends
-- **[Website](https://omss.dev)** - Documentation and guides
+OMSS follows semantic versioning:
+
+- **MAJOR** (2.0.0) — Breaking changes
+- **MINOR** (1.1.0) — Backward-compatible features
+- **PATCH** (1.0.1) — Clarifications and bug fixes
+
+To propose changes:
+
+1. Open a [GitHub Discussion](https://github.com/omss-spec/omss-spec/discussions) describing the problem
+2. If there's consensus, create an issue with a detailed proposal
+3. Submit a pull request with spec changes
+4. Maintainers review and merge if approved
+
+---
 
 ## 📊 Compliance
 
-To be OMSS v1.0 compliant, a backend must:
+### Required for OMSS v1.0 Compliance
 
-- ✅ Implement required endpoints (`/v1/movies/{id}`, `/v1/tv/{id}/...`)
-- ✅ Return responses matching the specified schemas
-- ✅ Use standard error codes and format
-- ✅ Support TMDB IDs as primary identifier
+A backend **MUST** implement:
 
-Optional features (recommended but not required):
+1. **Core endpoints:**
+    - `GET /v1/movies/{id}`
+    - `GET /v1/tv/{id}/seasons/{s}/episodes/{e}`
+    - `GET /v1/proxy?data={encoded_data}`
+    - `GET /`, `/v1`, or `/v1/health`
 
-- Search endpoint
-- Caching metadata
-- Multiple identifier support
-- Authentication
+2. **Source object** with required fields:
+    - `id`, `url` (proxy path), `type`, `quality`, `audioTracks`, `provider`
+
+3. **Subtitle object** with required fields:
+    - `url` (proxy path), `label`, `format`
+
+4. **Error responses** for all non-2xx responses:
+    - `error.code`, `error.message`, `traceId`
+
+5. **HTTP status codes:**
+    - `200` for success
+    - `400` for bad requests
+    - `404` for not found
+    - `500` for server errors
+
+6. **Proxy routing:** All `url` fields MUST use proxy paths
+7. **HTTPS** in production (HTTP allowed for `localhost` only)
+
+A frontend **MUST** use the OMSS v1.0 endpoints and response formats to ensure compatibility with any compliant backend.
+
+---
+
+## 🛠️ Ecosystem
+
+There is a Registry of known OMSS-compliant implementations. [See the list here](REGISTRY.md).
+
+**Want to add your implementation?** [Submit a PR](CONTRIBUTING.md) adding it to this list!
+
+---
 
 ## 📜 License
 
 This specification is licensed under the [MIT License](LICENSE).
 
 You are free to implement, extend, and distribute OMSS-compliant systems without restriction.
+
+---
+
+## 🙋 FAQ
+
+### Why TMDB IDs?
+
+TMDB provides stable, comprehensive IDs for movies and TV shows. It's free, well-maintained, and widely adopted.
+
+### Why proxy-based URLs?
+
+Many streaming providers require specific headers (Referer, User-Agent). Proxying through the backend allows header injection without CORS issues.
+
+### Can I add custom fields to responses?
+
+Yes! OMSS clients MUST ignore unknown fields, so backends can add custom metadata. Just don't remove required fields.
+
+### How do I handle missing quality/language metadata?
+
+Use `"unknown"` for quality and default to `"en"` for language. Add diagnostics explaining inference.
+
+### What about authentication?
+
+OMSS v1.0 is authentication-agnostic. Backends can implement auth (API keys, OAuth, etc.) as needed, although we recommend not to publicly expose OMSS endpoints at all. In our view, OMSS backends should be private services used only by trusted frontends on your LAN or personal devices.
+To host movie streaming backends publicly you risk abuse from unauthorized users leeching your bandwidth and resources.
+
+---
+
+<div align="center">
+
+**[Read the Full Specification →](/spec/v1.0/omss-v1.0.md)**
+
+Built with ❤️ by the OMSS Foundation
+
+</div>

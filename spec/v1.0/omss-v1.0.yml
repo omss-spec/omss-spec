@@ -1,0 +1,798 @@
+openapi: 3.0.0
+info:
+    title: Open Media Streaming Specification (OMSS)
+    description: |
+        A standardized REST API specification for streaming backends to expose movies, TV episodes, 
+        sources, and subtitles. OMSS enables interoperability between streaming backends and frontends.
+
+        **Key Features:**
+        - Standardized endpoints for movies and TV episodes
+        - Proxy-based source delivery with header support
+        - Multi-language and multi-quality source support
+        - Subtitle support with multiple formats
+        - Diagnostic reporting for partial scrapes
+        - Caching optimization recommendations
+        - HTTPS-enforced security
+
+        **Reference Implementation:** https://github.com/omss-spec/omss-spec
+    version: 1.0.0
+    license:
+        name: MIT License
+        url: https://github.com/omss-spec/omss-spec/blob/main/LICENSE
+    contact:
+        name: OMSS Community
+        url: https://github.com/omss-spec/omss-spec
+
+servers:
+    - url: https://api.example.com
+      description: Production server (HTTPS required)
+      variables:
+          version:
+              default: v1
+              enum:
+                  - v1
+    - url: http://localhost:3000
+      description: Development server (localhost only)
+
+tags:
+    - name: Content
+      description: Retrieve sources for movies and TV shows
+    - name: Proxy
+      description: Proxy endpoint to play content by upstream providers
+    - name: Health
+      description: Health and version information. All endpoints return the same object.
+    - name: Refresh
+      description: Refresh cached sources
+
+paths:
+    /:
+        get:
+            tags:
+                - Health
+            summary: Health check / Home endpoint
+            description: Returns basic information about the backend and available endpoints.
+            operationId: getHealth
+            responses:
+                '200':
+                    description: Backend is operational
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/HealthResponse'
+                            example:
+                                name: My OMSS Backend
+                                version: 1.0.0
+                                status: operational
+                                endpoints:
+                                    movie: /v1/movies/{id}
+                                    tv: /v1/tv/{id}/seasons/{s}/episodes/{e}
+                                    proxy: /v1/proxy/?data={encoded_data}
+                                spec: omss
+                                note: Community-powered streaming backend
+
+    /v1:
+        get:
+            tags:
+                - Health
+            summary: API version endpoint
+            description: Returns version information and available endpoints.
+            operationId: getVersion
+            responses:
+                '200':
+                    description: Backend is operational
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/HealthResponse'
+                            example:
+                                name: My OMSS Backend
+                                version: 1.0.0
+                                status: operational
+                                endpoints:
+                                    movie: /v1/movies/{id}
+                                    tv: /v1/tv/{id}/seasons/{s}/episodes/{e}
+                                    proxy: /v1/proxy/?data={encoded_data}
+                                spec: omss
+                                note: Community-powered streaming backend
+
+    /v1/health:
+        get:
+            tags:
+                - Health
+            summary: Health status endpoint
+            description: Returns health status of the backend.
+            operationId: getHealthStatus
+            responses:
+                '200':
+                    description: Backend is operational
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/HealthResponse'
+                            example:
+                                name: My OMSS Backend
+                                version: 1.0.0
+                                status: operational
+                                endpoints:
+                                    movie: /v1/movies/{id}
+                                    tv: /v1/tv/{id}/seasons/{s}/episodes/{e}
+                                    proxy: /v1/proxy/?data={encoded_data}
+                                spec: omss
+                                note: Community-powered streaming backend
+
+    /v1/movies/{id}:
+        get:
+            tags:
+                - Content
+            summary: Get streaming sources for a movie
+            description: |
+                Retrieve all available streaming sources and subtitles for a movie by TMDB ID.
+
+                **Requirements:**
+                - Returns an array of sources with URLs, quality, audio tracks, and provider information
+                - Returns an array of subtitles with URLs, labels, and formats
+                - Uses proxy paths for all URL fields
+                - Includes a unique responseId and expiration timestamp
+                - May include diagnostics for partial scrapes or warnings
+            operationId: getMovie
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: TMDB movie ID (numeric, max 20 characters)
+                  schema:
+                      type: string
+                      pattern: '^\d{1,20}$'
+                  example: '155'
+            responses:
+                '200':
+                    description: Streaming sources and subtitles found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SourceResponse'
+                            example:
+                                responseId: bdfa40a7-a468-461c-8563-7a0c165f252c
+                                expiresAt: '2026-01-15T18:00:00Z'
+                                sources:
+                                    - url: /v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D
+                                      type: hls
+                                      quality: 1080p
+                                      audioTracks:
+                                          - language: en
+                                            label: English
+                                            default: true
+                                      provider:
+                                          id: prov_1
+                                          name: Provider One
+                                subtitles:
+                                    - url: /v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D
+                                      label: English
+                                      format: vtt
+                                diagnostics: []
+                '400':
+                    description: Invalid TMDB ID
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                            example:
+                                error:
+                                    code: INVALID_TMDB_ID
+                                    message: TMDB ID must be numeric
+                                    details:
+                                        parameter: id
+                                        value: not-a-number
+                                        expected: numeric string
+                                traceId: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
+                '404':
+                    description: No sources found for this movie
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                            example:
+                                error:
+                                    code: NO_SOURCES_AVAILABLE
+                                    message: No streaming sources found for TMDB ID 999999
+                                    details:
+                                        parameter: id
+                                        value: '999999'
+                                        providersChecked: 5
+                                        allProvidersFailed: true
+                                traceId: f7e8d9c0-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /v1/tv/{id}/seasons/{s}/episodes/{e}:
+        get:
+            tags:
+                - Content
+            summary: Get streaming sources for a TV episode
+            description: |
+                Retrieve all available streaming sources and subtitles for a TV episode by TMDB series ID, 
+                season number, and episode number.
+
+                **Requirements:**
+                - Season number: 0–99 (0 = specials)
+                - Episode number: 1–9,999
+                - Returns sources with URLs, quality, audio tracks, and provider information
+                - Returns subtitles with URLs, labels, and formats
+                - Uses proxy paths for all URL fields
+                - Includes a unique responseId and expiration timestamp
+            operationId: getTvEpisode
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: TMDB series ID (numeric, max 20 characters)
+                  schema:
+                      type: string
+                      pattern: '^\d{1,20}$'
+                  example: '1396'
+                - name: s
+                  in: path
+                  required: true
+                  description: Season number (0–99, where 0 is specials)
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 99
+                  example: 1
+                - name: e
+                  in: path
+                  required: true
+                  description: Episode number (1–9,999)
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 9999
+                  example: 1
+            responses:
+                '200':
+                    description: Streaming sources and subtitles found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SourceResponse'
+                            example:
+                                responseId: e7f2c8d1-9a3b-4c5e-8f1d-2a6b9c4e7f3a
+                                expiresAt: '2026-01-15T20:30:00Z'
+                                sources:
+                                    - id: src_tv_001
+                                      url: /v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fstreaming.provider.com%2Fbreaking-bad%2Fs01e01.m3u8%22%7D
+                                      type: hls
+                                      quality: 1080p
+                                      audioTracks:
+                                          - language: en
+                                            label: English
+                                            default: true
+                                          - language: es
+                                            label: Spanish
+                                          - language: de
+                                            label: German
+                                      provider:
+                                          id: prov_streaming
+                                          name: Streaming Provider
+                                subtitles:
+                                    - url: /v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fsubs.provider.com%2Fbb-s01e01-en.vtt%22%7D
+                                      label: English
+                                      format: vtt
+                                diagnostics: []
+                '400':
+                    description: Invalid season or episode number
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                            example:
+                                error:
+                                    code: INVALID_EPISODE
+                                    message: Episode number is out of valid range for this season
+                                    details:
+                                        tmdbId: '1396'
+                                        season: 99
+                                        episode: 500
+                                        maxSeason: 5
+                                        maxEpisodeForSeason: 16
+                                traceId: 8b9c0d1e-2f3a-4b5c-6d7e-8f9a0b1c2d3e
+                '404':
+                    description: Episode not found or no sources available
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /v1/proxy:
+        get:
+            tags:
+                - Proxy
+            summary: Proxy upstream provider requests
+            description: |
+                Forwards requests to upstream streaming providers while handling headers and authentication.
+
+                **Data Parameter Format:**
+                The `data` parameter must be a [encodeURIComponent()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent) encoded JSON object:
+                ```json
+                {
+                  "url": "https://upstream-provider.com/stream.m3u8",
+                  "headers": {
+                    "Referer": "https://provider.com",
+                    "User-Agent": "Mozilla/5.0",
+                    "more": "headers..."
+                  }
+                }
+                ```
+                The frontend does not have to care about these data objects, since the url fields from the backend response should automatically do that already.
+
+                **Content-Type Handling:**
+                You will get that content type back, which you would, if you were requesting the url directly. 
+
+                **Caching:**
+                - Subtitles: Cache subtitles up to 24 hours
+                - DO NOT cache proxy responses (pass through caching headers from upstream)
+            operationId: proxyRequest
+            parameters:
+                - name: data
+                  in: query
+                  required: true
+                  description: |
+                      [encodeURIComponent()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent) encoded JSON object containing `url` and optional `headers`.
+                      Example (decoded): `{"url":"https://example.com/stream.m3u8","headers":{"Referer":"https://provider.com"}}`
+                  schema:
+                      type: string
+                      pattern: '^[A-Za-z0-9_-]+$'
+                  example: '%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%2C%22headers%22%3A%7B%22Referer%22%3A%22https%3A%2F%2Fprovider.com%22%7D%7D'
+            responses:
+                '200':
+                    description: Upstream response proxied successfully
+                    content:
+                        application/vnd.apple.mpegurl:
+                            schema:
+                                type: string
+                            example: |
+                                #EXTM3U
+                                #EXT-X-VERSION:3
+                                #EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080
+                                /v1/proxy?data=%7B...%7D
+                        application/dash+xml:
+                            schema:
+                                type: string
+                        text/vtt:
+                            schema:
+                                type: string
+                        text/plain:
+                            schema:
+                                type: string
+                        video/mp4:
+                            schema:
+                                type: string
+                                format: binary
+                '400':
+                    description: Invalid data parameter
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                '404':
+                    description: Upstream URL not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                '500':
+                    description: Proxy error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /v1/refresh/{responseId}:
+        get:
+            tags:
+                - Refresh
+            summary: Refresh cached sources
+            description: |
+                Invalidates the cache for a specific source by responseId. 
+                This is useful when sources have expired or changed.
+
+                **Behavior:**
+                - Immediately invalidates cache for the given responseId
+                - Next request for the same content will perform a fresh scrape
+                - Returns simple OK status on success
+                - responseId format: UUID v4 (alphanumeric with hyphens/underscores, max 128 chars)
+            operationId: refreshSource
+            parameters:
+                - name: responseId
+                  in: path
+                  required: true
+                  description: |
+                      Unique response ID (UUID v4 format, alphanumeric with hyphens/underscores, max 128 characters)
+                  schema:
+                      type: string
+                      pattern: '^[a-zA-Z0-9_-]{1,128}$'
+                  example: cf6c3c2d-17be-4a5a-9488-bf12e70dca5a
+            responses:
+                '200':
+                    description: Cache refreshed successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RefreshResponse'
+                            example:
+                                status: OK
+                '400':
+                    description: Invalid responseId format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                '404':
+                    description: ResponseId not found or already expired
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+    schemas:
+        HealthResponse:
+            type: object
+            required:
+                - name
+                - version
+                - status
+                - spec
+            properties:
+                name:
+                    type: string
+                    description: Human-readable name of the backend
+                    example: My OMSS Backend
+                version:
+                    type: string
+                    description: Backend version (semantic versioning)
+                    example: 1.0.0
+                status:
+                    type: string
+                    enum:
+                        - operational
+                        - degraded
+                        - maintenance
+                        - offline
+                    description: Current operational status
+                endpoints:
+                    type: object
+                    description: Available endpoint paths
+                    properties:
+                        movie:
+                            type: string
+                            example: /v1/movies/{id}
+                        tv:
+                            type: string
+                            example: /v1/tv/{id}/seasons/{s}/episodes/{e}
+                        proxy:
+                            type: string
+                            example: /v1/proxy/?data={encoded_data}
+                spec:
+                    type: string
+                    enum:
+                        - omss
+                    description: Standard name (always "omss")
+                note:
+                    type: string
+                    description: Optional note about the backend or recommended frontend
+                    example: Community-powered streaming backend. Visit https://github.com/mybackend for more info.
+
+        SourceResponse:
+            type: object
+            required:
+                - responseId
+                - expiresAt
+                - sources
+                - subtitles
+                - diagnostics
+            properties:
+                responseId:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for this response (UUID v4)
+                    example: bdfa40a7-a468-461c-8563-7a0c165f252c
+                expiresAt:
+                    type: string
+                    format: date-time
+                    description: |
+                        ISO 8601 timestamp when sources expire and cache is invalidated.
+                        Recommended default: 2 hours from response time for sources.
+                    example: '2026-01-15T18:00:00Z'
+                sources:
+                    type: array
+                    description: Array of available streaming sources
+                    items:
+                        $ref: '#/components/schemas/Source'
+                    minItems: 0
+                subtitles:
+                    type: array
+                    description: Array of available subtitles
+                    items:
+                        $ref: '#/components/schemas/Subtitle'
+                    minItems: 0
+                diagnostics:
+                    type: array
+                    description: |
+                        Optional diagnostics for partial scrapes, warnings, or metadata inferred from filenames.
+                        Useful for understanding why certain fields may have incomplete or inferred values.
+                    items:
+                        $ref: '#/components/schemas/Diagnostic'
+                    minItems: 0
+
+        Source:
+            type: object
+            required:
+                - id
+                - url
+                - type
+                - quality
+                - audioTracks
+                - provider
+            properties:
+                url:
+                    type: string
+                    description: |
+                        Proxy path to the streaming URL (not direct upstream URL).
+                        Format: `/v1/proxy?data={encodeURIComponent_encoded_json}`
+                    example: /v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D
+                type:
+                    type: string
+                    enum:
+                        - hls
+                        - dash
+                        - http
+                        - mp4
+                        - mkv
+                        - webm
+                    description: Stream type/format
+                quality:
+                    type: string
+                    description: |
+                        Video quality/resolution. Common values: "unknown", "360p", "480p", "720p", "1080p", "2160p".
+                        May be inferred from filename or manifest if unavailable. Not standardized!
+                    example: 1080p
+                audioTracks:
+                    type: array
+                    description: Available audio tracks for this source
+                    items:
+                        $ref: '#/components/schemas/AudioTrack'
+                    minItems: 1
+                provider:
+                    $ref: '#/components/schemas/Provider'
+
+        AudioTrack:
+            type: object
+            required:
+                - language
+                - label
+            properties:
+                language:
+                    type: string
+                    description: |
+                        ISO 639-1 language code (e.g., "en", "es", "de").
+                        May be inferred or defaulted to "en" if unavailable.
+                    example: en
+                label:
+                    type: string
+                    description: Human-readable audio track label
+                    example: English
+                default:
+                    type: boolean
+                    description: Whether this is the default audio track
+                    default: false
+                    example: true
+
+        Subtitle:
+            type: object
+            required:
+                - url
+                - label
+                - format
+            properties:
+                url:
+                    type: string
+                    description: |
+                        Proxy path to the subtitle file (not direct upstream URL).
+                        Format: `/v1/proxy?data={encodeURIComponent_encoded_json}`
+                    example: /v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D
+                label:
+                    type: string
+                    description: Human-readable subtitle label
+                    example: English
+                format:
+                    type: string
+                    enum:
+                        - vtt
+                        - srt
+                        - ass
+                        - ssa
+                    description: Subtitle file format
+                    example: vtt
+
+        Provider:
+            type: object
+            required:
+                - id
+                - name
+            properties:
+                id:
+                    type: string
+                    description: Unique identifier for the provider (internal use)
+                    example: prov_1
+                name:
+                    type: string
+                    description: Human-readable provider name
+                    example: Provider One
+
+        Diagnostic:
+            type: object
+            required:
+                - code
+                - message
+                - severity
+            properties:
+                code:
+                    type: string
+                    description: Machine-readable diagnostic code
+                    enum:
+                        - QUALITY_INFERRED
+                        - LANGUAGE_INFERRED
+                        - TYPE_INFERRED
+                        - SUBTITLE_LABEL_INFERRED
+                        - PROVIDER_ERROR
+                        - PARTIAL_SCRAPE
+                    example: QUALITY_INFERRED
+                message:
+                    type: string
+                    description: Human-readable diagnostic message
+                    example: Quality for source 'src_tv_002' was inferred from filename
+                field:
+                    type: string
+                    description: JSON path to the field this diagnostic relates to (empty string if not field-specific)
+                    example: sources.quality
+                severity:
+                    type: string
+                    enum:
+                        - info
+                        - warning
+                        - error
+                    description: Severity level of the diagnostic
+                    example: warning
+
+        RefreshResponse:
+            type: object
+            required:
+                - status
+            properties:
+                status:
+                    type: string
+                    enum:
+                        - OK
+                    description: Cache refresh status
+                    example: OK
+
+        ErrorResponse:
+            type: object
+            required:
+                - error
+                - traceId
+            properties:
+                error:
+                    $ref: '#/components/schemas/ErrorObject'
+                traceId:
+                    type: string
+                    format: uuid
+                    description: Unique trace ID for error tracking and debugging
+                    example: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
+
+        ErrorObject:
+            type: object
+            required:
+                - code
+                - message
+            properties:
+                code:
+                    type: string
+                    description: Machine-readable error code
+                    enum:
+                        - INVALID_TMDB_ID
+                        - INVALID_PARAMETER
+                        - MISSING_PARAMETER
+                        - INVALID_SEASON
+                        - INVALID_EPISODE
+                        - INVALID_RESPONSE_ID
+                        - RESPONSE_ID_NOT_FOUND
+                        - NO_SOURCES_AVAILABLE
+                        - ENDPOINT_NOT_FOUND
+                        - METHOD_NOT_ALLOWED
+                        - INTERNAL_ERROR
+                        - UNSUPPORTED_MEDIA_TYPE
+                    example: INVALID_TMDB_ID
+                message:
+                    type: string
+                    description: Human-readable error message
+                    example: TMDB ID must be numeric
+                details:
+                    type: object
+                    description: Additional error details (backend-specific, optional)
+                    example:
+                        parameter: id
+                        value: not-a-number
+                        expected: numeric string
+
+    responses:
+        BadRequest:
+            description: Bad request (invalid parameters)
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+
+        NotFound:
+            description: Resource not found
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+
+        InternalError:
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+
+    headers:
+        Deprecation:
+            description: Indicates if this endpoint is deprecated
+            schema:
+                type: boolean
+        Sunset:
+            description: HTTP date when deprecated endpoint will be removed
+            schema:
+                type: string
+                format: date-time
+
+x-omss:
+    complianceRequirements:
+        - Core endpoints must be implemented
+        - Source and Subtitle objects must include all required fields
+        - Error responses must include error.code, error.message, and traceId
+        - All URLs must use proxy paths
+        - HTTPS required in production
+        - Input validation on all path and query parameters
+    cachingRecommendations:
+        sourceCacheTTL: 7200
+        subtitleCacheTTL: 86400
+        strategies:
+            - In-memory caching (Redis, Memcached)
+            - Separate caching for sources and subtitles
+            - Invalidate on /v1/refresh/{responseId} calls
+    performanceRecommendations:
+        - Implement request coalescing
+        - Use connection pooling
+        - Circuit breakers for failing providers
+        - Prefetch sources before playback
+        - Monitor expiresAt and refresh proactively
