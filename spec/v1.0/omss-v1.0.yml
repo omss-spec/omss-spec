@@ -161,7 +161,6 @@ paths:
                                       audioTracks:
                                           - language: en
                                             label: English
-                                            default: true
                                       provider:
                                           id: prov_1
                                           name: Provider One
@@ -270,7 +269,6 @@ paths:
                                       audioTracks:
                                           - language: en
                                             label: English
-                                            default: true
                                           - language: es
                                             label: Spanish
                                           - language: de
@@ -598,11 +596,6 @@ components:
                     type: string
                     description: Human-readable audio track label
                     example: English
-                default:
-                    type: boolean
-                    description: Whether this is the default audio track
-                    default: false
-                    example: true
 
         Subtitle:
             type: object

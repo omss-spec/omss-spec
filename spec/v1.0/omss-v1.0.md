@@ -419,8 +419,7 @@ If the `responseId` is valid the response will always be `200 OK`, since the bac
     "audioTracks": [
         {
             "language": "en",
-            "label": "English",
-            "default": true
+            "label": "English"
         },
         {
             "language": "es",
@@ -455,11 +454,10 @@ If the `responseId` is valid the response will always be `200 OK`, since the bac
 
 - **`quality`** (string): Video quality. There is no standardized list of qualities.
 
-- **`audioTracks`** (array): Array of audio track objects. At least one audio track MUST be provided. Default is English (`en`) if unknown.
+- **`audioTracks`** (array): Array of audio track objects. Default is English (`en`) if unknown.
     - Each audio track object contains:
         - `language` (string): Audio language (ISO 639-1 code).
         - `label` (string): Human-readable language name.
-        - `default` (boolean, optional): Whether this is the default audio track.
 
 - **`provider`** (object): Information about the upstream provider.
     - `id` (string): Unique provider identifier.
@@ -907,7 +905,7 @@ Accept: application/json
             "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
             "type": "hls",
             "quality": "1080p",
-            "audioTracks": [{ "language": "en", "label": "English", "default": true }],
+            "audioTracks": [{ "language": "en", "label": "English" }],
             "provider": { "id": "prov_1", "name": "Provider One" }
         }
     ],
@@ -945,7 +943,7 @@ Accept: application/json
             "type": "hls",
             "quality": "1080p",
             "audioTracks": [
-                { "language": "en", "label": "English", "default": true },
+                { "language": "en", "label": "English" },
                 { "language": "es", "label": "Spanish" },
                 { "language": "de", "label": "German" }
             ],
@@ -956,7 +954,7 @@ Accept: application/json
             "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn2.example.com%2Fbb-s01e01-720p.mp4%22%7D",
             "type": "mp4",
             "quality": "720p",
-            "audioTracks": [{ "language": "en", "label": "English", "default": true }],
+            "audioTracks": [{ "language": "en", "label": "English" }],
             "provider": { "id": "prov_cdn2", "name": "CDN Provider 2" }
         }
     ],
@@ -1005,7 +1003,7 @@ Accept: application/json
             "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Ffast-cdn.net%2Ffight-club.m3u8%22%2C%22headers%22%3A%7B%22User-Agent%22%3A%22Mozilla%2F5.0%22%7D%7D",
             "type": "hls",
             "quality": "unknown",
-            "audioTracks": [{ "language": "en", "label": "English", "default": true }],
+            "audioTracks": [{ "language": "en", "label": "English" }],
             "provider": { "id": "fast_cdn", "name": "Fast CDN" }
         }
     ],
