@@ -10,7 +10,7 @@
 
 **A standardized REST API specification for streaming media backends**
 
-[Specification](/spec/v1.0/omss-v1.0.md) · [OpenAPI](/spec/v1.0/omss-openapi.yml) · [Contributing](CONTRIBUTING.md) · [Discussions](https://github.com/omss-spec/omss-spec/discussions)
+[Specification](/spec/v1.0/omss-v1.0.md) · [OpenAPI](/spec/v1.0/omss-v1.0.yml) · [Contributing](CONTRIBUTING.md) · [Discussions](https://github.com/omss-spec/omss-spec/discussions)
 
 </div>
 
@@ -76,7 +76,7 @@ GET / or /v1 or /v1/health                          # Health check
 **Implement an OMSS-compliant backend:**
 
 1. Read the [full specification](/spec/v1.0/omss-v1.0.md)
-2. Review the [OpenAPI spec](/spec/v1.0/omss-openapi.yml)
+2. Review the [OpenAPI spec](/spec/v1.0/omss-v1.0.yml)
 3. Implement the 4 required endpoints
 4. Return responses matching the schemas
 5. Use proxy paths for all source/subtitle URLs
@@ -94,7 +94,7 @@ GET / or /v1 or /v1/health                          # Health check
 
 **Integrate with any OMSS backend:**
 
-1. Review the [OpenAPI specification](/spec/v1.0/omss-openapi.yml)
+1. Review the [OpenAPI specification](/spec/v1.0/omss-v1.0.yml)
 2. Point your app to an OMSS backend URL
 3. Call `/v1/movies/{id}` or `/v1/tv/{id}/seasons/{s}/episodes/{e}`
 4. Parse `SourceResponse` and extract `sources` array
@@ -159,7 +159,7 @@ Host: api.example.com
 ## 📋 Documentation
 
 - **[OMSS v1.0 Specification](/spec/v1.0/omss-v1.0.md)** — Full human-readable spec
-- **[OpenAPI Specification](/spec/v1.0/omss-openapi.yml)** — Machine-readable API definition (Swagger/Redoc compatible)
+- **[OpenAPI Specification](/spec/v1.0/omss-v1.0.yml)** — Machine-readable API definition (Swagger/Redoc compatible)
 - **[Contributing Guide](CONTRIBUTING.md)** — How to propose changes
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines
 - **[Security Policy](SECURITY.md)** — Reporting vulnerabilities
