@@ -525,7 +525,7 @@ Frontend players handle audio track switching using manifest metadata.
 
 ```json
 {
-    "url": "/v1/proxy?data=encodeURIComponent({\"url\":\"https://provider.com/subs/abc1234.vtt\",\"headers\":{\"Referer\":\"https://provider.com/download\"}})",
+    "url": "http://localhost:3000/v1/proxy?data=encodeURIComponent({\"url\":\"https://provider.com/subs/abc1234.vtt\",\"headers\":{\"Referer\":\"https://provider.com/download\"}})",
     "label": "English",
     "format": "vtt"
 }
@@ -902,7 +902,7 @@ Accept: application/json
     "sources": [
         {
             "id": "src_001",
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
             "type": "hls",
             "quality": "1080p",
             "audioTracks": [{ "language": "en", "label": "English" }],
@@ -911,7 +911,7 @@ Accept: application/json
     ],
     "subtitles": [
         {
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D",
             "label": "English",
             "format": "vtt"
         }
@@ -939,7 +939,7 @@ Accept: application/json
     "sources": [
         {
             "id": "src_tv_001",
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fstreaming.provider.com%2Fbreaking-bad%2Fs01e01.m3u8%22%2C%22headers%22%3A%7B%22Referer%22%3A%22https%3A%2F%2Fprovider.com%22%7D%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fstreaming.provider.com%2Fbreaking-bad%2Fs01e01.m3u8%22%2C%22headers%22%3A%7B%22Referer%22%3A%22https%3A%2F%2Fprovider.com%22%7D%7D",
             "type": "hls",
             "quality": "1080p",
             "audioTracks": [
@@ -951,7 +951,7 @@ Accept: application/json
         },
         {
             "id": "src_tv_002",
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn2.example.com%2Fbb-s01e01-720p.mp4%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn2.example.com%2Fbb-s01e01-720p.mp4%22%7D",
             "type": "mp4",
             "quality": "720p",
             "audioTracks": [{ "language": "en", "label": "English" }],
@@ -960,12 +960,12 @@ Accept: application/json
     ],
     "subtitles": [
         {
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fsubs.provider.com%2Fbb-s01e01-en.vtt%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fsubs.provider.com%2Fbb-s01e01-en.vtt%22%7D",
             "label": "English",
             "format": "vtt"
         },
         {
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fsubs.provider.com%2Fbb-s01e01-es.srt%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fsubs.provider.com%2Fbb-s01e01-es.srt%22%7D",
             "label": "Spanish",
             "format": "srt"
         }
@@ -1000,7 +1000,7 @@ Accept: application/json
     "sources": [
         {
             "id": "src_550_001",
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Ffast-cdn.net%2Ffight-club.m3u8%22%2C%22headers%22%3A%7B%22User-Agent%22%3A%22Mozilla%2F5.0%22%7D%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Ffast-cdn.net%2Ffight-club.m3u8%22%2C%22headers%22%3A%7B%22User-Agent%22%3A%22Mozilla%2F5.0%22%7D%7D",
             "type": "hls",
             "quality": "unknown",
             "audioTracks": [{ "language": "en", "label": "English" }],

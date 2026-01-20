@@ -18,7 +18,7 @@
 
 ## 🎯 What is OMSS?
 
-### **OMSS (Open Media Streaming Specification)** is an open standard that defines how streaming backends expose movies, TV episodes, sources, and subtitles through a unified REST API.
+**OMSS (Open Media Streaming Specification)** is an open standard that defines how streaming backends expose movies, TV episodes, sources, and subtitles through a unified REST API.
 
 ### The Problem
 
@@ -50,7 +50,7 @@ Every streaming backend has custom API formats:
 GET /v1/movies/{id}                                 # Movie streaming sources
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}            # TV episode streaming sources
 GET /v1/proxy?data={base64url_encoded_json}         # Proxy to upstream providers
-GET /v1/refresh/{sourceId}                          # Invalidate cache for sources
+GET /v1/refresh/{responseid}                        # Invalidate cache for sources
 GET / or /v1 or /v1/health                          # Health check
 ```
 
@@ -77,7 +77,7 @@ GET / or /v1 or /v1/health                          # Health check
 
 1. Read the [full specification](/spec/v1.0/omss-v1.0.md)
 2. Review the [OpenAPI spec](/spec/v1.0/omss-v1.0.yml)
-3. Implement the 4 required endpoints
+3. Implement the 5 required endpoints
 4. Return responses matching the schemas
 5. Use proxy paths for all source/subtitle URLs
 
@@ -86,6 +86,7 @@ GET / or /v1 or /v1/health                          # Health check
 - ✅ `GET /v1/movies/{id}` returns `SourceResponse`
 - ✅ `GET /v1/tv/{id}/seasons/{s}/episodes/{e}` returns `SourceResponse`
 - ✅ `GET /v1/proxy?data=...` proxies upstream requests
+- ✅ `GET /v1/refresh/{responseid}` remove response from cache
 - ✅ `GET /` or `/v1` or `/v1/health` returns backend info
 - ✅ All errors return `ErrorResponse` with `code`, `message`, `traceId`
 - ✅ HTTPS in production (HTTP allowed for localhost only)
@@ -122,19 +123,17 @@ Host: api.example.com
 
 ```json
 {
-    "sourceId": "bdfa40a7-a468-461c-8563-7a0c165f252c",
+    "responseid": "bdfa40a7-a468-461c-8563-7a0c165f252c",
     "expiresAt": "2026-01-15T18:00:00Z",
     "sources": [
         {
-            "id": "src_001",
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
             "type": "hls",
             "quality": "1080p",
             "audioTracks": [
                 {
                     "language": "en",
                     "label": "English",
-                    "default": true
                 }
             ],
             "provider": {
@@ -145,7 +144,7 @@ Host: api.example.com
     ],
     "subtitles": [
         {
-            "url": "/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D",
+            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D",
             "label": "English",
             "format": "vtt"
         }
@@ -244,6 +243,7 @@ A backend **MUST** implement:
     - `GET /v1/movies/{id}`
     - `GET /v1/tv/{id}/seasons/{s}/episodes/{e}`
     - `GET /v1/proxy?data={encoded_data}`
+    - `GET /v1/refresh{responseid}`
     - `GET /`, `/v1`, or `/v1/health`
 
 2. **Source object** with required fields:
