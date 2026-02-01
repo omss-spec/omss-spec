@@ -1,6 +1,6 @@
 <div align="center">
   
-  <img src="https://repository-images.githubusercontent.com/1132306794/6985c06b-8e53-41eb-9148-a81612fb6ac2" alt="OMSS Logo" />
+  <img src="https://repository-images.githubusercontent.com/1132306794/d7750bdf-7892-4b60-88e5-0fc8abcc112c" alt="OMSS Logo" />
 
 # Open Media Streaming Specification
 
