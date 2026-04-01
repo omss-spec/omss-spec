@@ -12,8 +12,10 @@ Ratings are provided based on community feedback, uptime and performance. Please
 
 | Name | Rating (5 best, 1 avoid) | Notes |
 | ---- | ------------------------ | ----- |
+| CinePro/Core | 5 | https://github.com/cinepro-org/core | 
 
 ## Frontend Registry
 
 | Name | Rating (5 best, 1 avoid) | Notes |
 | ---- | ------------------------ | ----- |
+| CinePro/Ui | 5 | https://github.com/cinepro-org/ui | 
