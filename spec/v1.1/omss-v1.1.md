@@ -217,8 +217,7 @@ GET /v1
                 }
             ]
         }]
-    },
-    [key]: [value]
+    }
 }
 ```
 
@@ -232,8 +231,8 @@ GET /v1
     - `tv` (string): Path to the TV show endpoint. MUST contain the `{id}`, `{s}` and `{e}` placeholders where the frontend will insert the TMDB ID, season and episode respectively.
 - `spec` (string): When implementing OMSS, this MUST be `"omss"`.
 - `media` (object): field for backends to provide a list of available media.
-    - `movies` (array of integers OR string: '_' as const): List of TMDB movie IDs available in this backend or `'_'` if the backend supports all movies.
-    - `tv` (array of objects or string: '_' as const): List of TMDB TV series IDs with available seasons and episodes, or `'_'`if the backend supports all TV series. You **cannot** use`'\*'` inside of the tv object. Each object contains:
+    - `movies` (array of integers OR string: '*' as const): List of TMDB movie IDs available in this backend or `'*'` if the backend supports all movies.
+    - `tv` (array of objects or string: '*' as const): List of TMDB TV series IDs with available seasons and episodes, or `'*'`if the backend supports all TV series. You can use`'*'` inside of the tv object to mark a specific series and/or season as available. Each object contains:
         - `id` (integer): TMDB series ID.
         - `seasons` (array of objects): List of seasons with available episodes. Each object contains:
             - `season` (integer): Season number.
@@ -241,8 +240,7 @@ GET /v1
 
 **Optional Fields:**
 
-- `note` (string): A custom message.
-- `[key]` (any): Backends can include any additional custom fields as needed. **Clients must ignore unknown fields.**
+- `note` (string): A custom message by the backend.
 
 ### 4.2 Movie Sources
 
@@ -572,8 +570,8 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 | Error/Warning Code | Description                                                | Severity |
 | ------------------ | ---------------------------------------------------------- | -------- |
-| `PROVIDER_ERROR`   | Provider request timed out.                                | error    |
-| `PARTIAL_SCRAPE`   | Some providers failed. This applies to the whole response. | warning  |
+| `PROVIDER_ERROR`   | An error occurred while fetching from the provider.        | error    |
+| `PARTIAL_SCRAPE`   | A provider did respond, but not to it's full extent.       | warning  |
 
 ---
 
@@ -611,7 +609,7 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 | Error Code               | HTTP Status | Description                             |
 | ------------------------ | ----------- | --------------------------------------- |
-| `INVALID_TMDB_ID`        | 400         | Invalid TMDB ID                         |
+| `INVALID_TMDB_ID`        | 400         | Invalid (i.e., fictional ID's) TMDB ID  |
 | `INVALID_PARAMETER`      | 400         | Invalid query/path parameter.           |
 | `MISSING_PARAMETER`      | 400         | Required parameter missing.             |
 | `INVALID_SEASON`         | 400         | Season number out of valid range.       |
@@ -623,6 +621,9 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 | `METHOD_NOT_ALLOWED`     | 405         | HTTP method not supported.              |
 | `INTERNAL_ERROR`         | 500         | Unexpected server error.                |
 | `UNSUPPORTED_MEDIA_TYPE` | 415         | Unsupported Content-Type in request.    |
+
+> [!NOTE]
+> `INVALID_TMDB_ID` should be used, when the TMDB ID is valid in format but does not correspond to any media (e.g., `99999999`). For IDs that are not even valid in format (e.g., `abc123`), `INVALID_PARAMETER` should be used instead.
 
 ### 7.4 Edge Cases
 
@@ -649,7 +650,7 @@ When the TMDB ID is valid but no streaming sources are available:
 ```json
 {
     "error": {
-        "code": "INVALID_TMDB_ID",
+        "code": "INVALID_PARAMETER",
         "message": "TMDB ID must be numeric",
         "details": {
             "parameter": "tmdbId",
@@ -959,7 +960,7 @@ TMDB IDs must contain numeric characters only.
 ```json
 {
     "error": {
-        "code": "INVALID_TMDB_ID",
+        "code": "INVALID_PARAMETER",
         "message": "TMDB ID must contain numeric characters only",
         "details": {
             "parameter": "id",
