@@ -49,8 +49,8 @@ Every streaming backend has custom API formats:
 ```http
 GET /v1/movies/{id}?platform=native                     # Movie streaming sources
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web   # TV episode streaming sources
-POST /v1/refresh/{id}                                    # Invalidate cache for sources
-GET / or /v1 or /v1/health                              # Health check
+POST /v1/refresh/{id}                                   # Invalidate cache for sources
+GET / or /v1                                            # Health check
 ```
 
 ### Key Features

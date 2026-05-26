@@ -202,7 +202,7 @@ GET /v1
     },
     "spec": "omss",
     "note": "Here some description, motivation, disclaimer or anything else. Here you could also link your suggested OMSS frontend.",
-    "medias": {
+    "media": {
         "movies": [123, 456],
         "tv": [{
             "id": 1396,
@@ -231,9 +231,9 @@ GET /v1
     - `movie` (string): Path to the movie endpoint. MUST contain the `{id}` placeholder where the frontend will insert the TMDB ID.
     - `tv` (string): Path to the TV show endpoint. MUST contain the `{id}`, `{s}` and `{e}` placeholders where the frontend will insert the TMDB ID, season and episode respectively.
 - `spec` (string): When implementing OMSS, this MUST be `"omss"`.
-- `medias` (object): field for backends to provide a list of available media.
+- `media` (object): field for backends to provide a list of available media.
     - `movies` (array of integers OR string: '_' as const): List of TMDB movie IDs available in this backend or `'_'` if the backend supports all movies.
-    - `tv` (array of objects OR string: '_' as const): List of TMDB TV series IDs with available seasons and episodes, or `'_'`if the backend supports all TV series. You **cannot** use`'\*'` inside of the tv object! Each object contains:
+    - `tv` (array of objects or string: '_' as const): List of TMDB TV series IDs with available seasons and episodes, or `'_'`if the backend supports all TV series. You **cannot** use`'\*'` inside of the tv object. Each object contains:
         - `id` (integer): TMDB series ID.
         - `seasons` (array of objects): List of seasons with available episodes. Each object contains:
             - `season` (integer): Season number.
@@ -302,7 +302,7 @@ In previous versions of OMSS, the spec used to dictate the proxy behaviour. Star
 
 ### 4.5 Refresh Endpoint
 
-**Purpose**: Unified endpoint to refresh a source by its unique ID.
+**Purpose**: Unified endpoint to refresh a response by its id.
 
 ```http
 POST /v1/refresh/{id}
@@ -310,7 +310,7 @@ POST /v1/refresh/{id}
 
 **Path Parameters:**
 
-- `id` (string, required): The unique ID of the source to refresh.
+- `id` (string, required): The ID of the response to refresh.
 
 **Response Object Schema:**
 
@@ -374,9 +374,6 @@ However, the `platform` query parameter **will** change the structure of the Sou
     "sources": [
         // 6.2 Source Objects here
     ],
-    "downloads": [
-        // 6.2 Source Objects here
-    ],
     "subtitles": [
         // 6.3 Subtitle Objects here
     ],
@@ -390,7 +387,6 @@ However, the `platform` query parameter **will** change the structure of the Sou
 
 - `id` (string): Unique response identifier (e.g. UUID v4).
 - `sources` (array): Array of Source objects (at least one required. if no source found, see [7.4.1](#741-media-exists-no-sources)).
-- `downloads` (array): Array of Source objects that are direct download links and [not streamable by clients](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Range#:~:text=A%20server%20that%20doesn%27t%20support%20range%20requests%20may%20ignore%20the%20Range%20header%20and%20return%20the%20whole%20resource%20with%20a%20200%20status%20code.) (may be empty).
 - `subtitles` (array): Array of Subtitle objects (may be empty).
 - `diagnostics` (array): Non-fatal warnings/errors about data quality/inference and provider issues (may be empty).
 - `expiresAt` (string, optional): ISO 8601 timestamp when sources expire (for signed/temporary URLs).
@@ -405,7 +401,8 @@ However, the `platform` query parameter **will** change the structure of the Sou
 
 **Platform**:
 
-The structure of the Source Object can differ based on the `platform` query parameter in the request. For `web`, the `url` must be a playable streaming link (e.g., HLS, MP4) that can be used directly in HTML5 video players (i.e. without CORS or any other restrictions). For `native`, the `url` turns into an object with `upstream` (string) and `upstreamHeaders` (object) fields, which provide the original URL and necessary headers for native player implementations that can handle CORS and custom headers.
+The structure of the Source Object can differ based on the `platform` query parameter in the request. **For `web`, the `url` must be a playable streaming link (e.g., HLS, MP4) that can be used directly in HTML5 video players (i.e. without CORS or any other restrictions)**. **For `native`, the `url` has to be the upstream URL and a new `headers` (object) field will be added**. This allows native player implementations that can handle CORS and custom headers to access the original streaming URL from the provider, while web clients will receive a proxied/optimized URL that is accessible without additional headers or CORS restrictions in browsers.
+
 Default: `web`.
 
 **?platform=web Example**
@@ -414,6 +411,7 @@ Default: `web`.
 {
     "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
     "url": "https://localhost:3000/playable/stream/endpoint.m3u8",
+    "streamable": true,
     "type": "hls",
     "quality": "FHD",
     "audioTracks": ["Original", "English", "Spanish"],
@@ -429,13 +427,12 @@ Default: `web`.
 ```json ?platform=native
 {
     "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
-    "url": {
-        "upstream": "https://upstream.provider.com/locked/stream/endpoint.m3u8",
-        "upstreamHeaders": {
-            "Referer": "https://upstream.provider.com/watch/locked/stream",
-            "more": "custom headers as needed"
-        }
+    "url": "https://upstream.provider.com/locked/stream/endpoint.m3u8",
+    "headers": {
+        "Referer": "https://upstream.provider.com/watch/locked/stream",
+        "more": "custom headers as needed"
     },
+    "streamable": true,
     "type": "hls",
     "quality": "FHD",
     "audioTracks": ["Original", "English", "Spanish"],
@@ -449,18 +446,18 @@ Default: `web`.
 #### 6.2.1 Required Fields
 
 - **`id`** (string): Unique source identifier (e.g. UUID v4).
-- **`url`** (string or Object):
-    - For `web` platform: A string representing the playable streaming URL. This URL must be directly usable in HTML5 video players without CORS issues.
-    - For `native` platform: An object containing:
-        - `upstream` (string): The original streaming URL from the provider, which may require CORS handling or custom headers.
-        - `upstreamHeaders` (object): Key-value pairs of HTTP (and non-standard HTTP) headers that should be included when accessing the `upstream` URL.
+- **`url`** (string): For `web`: A string representing the URL to the streaming source that can be used directly in HTML5 video players without CORS issues. For `native`: A string representing the original URL to the streaming source from the provider, which may require CORS handling or custom headers (provided in the `headers` field).
+- **`headers`** (object, only for `native` platform): Key-value pairs of HTTP (and non-standard HTTP) headers that should be included when accessing the `url` for native player implementations that can handle CORS and custom headers. For `web` platform, this field is not included, and the provided `url` must be accessible without additional headers or CORS restrictions without additional headers.
+
+- **`streamable`** (boolean): Indicates if the source is streamable (true) or a direct download link (false). If false, clients must treat the URL as a download link rather than a streaming source. Download links CANNOT be used as streaming sources. ([see Range Header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Range#:~:text=A%20server%20that%20doesn%27t%20support%20range%20requests%20may%20ignore%20the%20Range%20header%20and%20return%20the%20whole%20resource%20with%20a%20200%20status%20code.))
 
 - **`type`** (string): Source type, one of:
     - `hls` — HTTP Live Streaming (M3U8).
     - `mp4` — MP4 file.
     - `mkv` — MKV file.
 
-- **`quality`** (string): Video quality. One of 8k, 4k, 2k, FHD, HD, SD, 360, 240, `Auto`. default/unknown --> `Auto`
+- **`quality`** (string): Video quality. One of 8K, 4K, 2K, FHD, HD, SD, `Auto`. default/unknown --> `Auto`
+  Quality should be estimated based on available metadata such as bitrate, resolution, or inferred from the filename or manifest. If no quality information is available, use `Auto`. For example, 320p --> SD, 720p --> HD, 1080p --> FHD, 2160p --> 4K, 4320p --> 8K.
 
 - **`audioTracks`** (array of strings): Human-readable language name. default/unknown --> `Original`
 
@@ -485,7 +482,8 @@ For backends: If the language cannot be determined, use `"Original"`.
 
 **Platform**:
 
-The structure of the Subtitle Object can differ based on the `platform` query parameter in the request. For `web`, the `url` must be a fetchable link that can be used directly in HTML5 track elements (i.e. without CORS or any other restrictions). For `native`, the `url` turns into an object with `upstream` (string) and `upstreamHeaders` (object) fields, which provide the original URL and necessary headers for native player implementations that can handle CORS and custom headers.
+The structure of the Subtitle Object can differ based on the `platform` query parameter in the request.
+**For `web`, the `url` must be a direct link to a subtitle file (e.g., VTT, SRT) that can be used directly in HTML5 track elements without CORS issues**. **For `native`, the `url` has to be the upstream URL and a new `headers` (object) field will be added**. This allows native player implementations that can handle CORS and custom headers to access the original subtitle URL from the provider, while web clients will receive a proxied/optimized URL that is accessible without additional headers or CORS restrictions in browsers.
 Default: `web`.
 
 **?platform=web Example**
@@ -495,7 +493,11 @@ Default: `web`.
     "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
     "url": "https://localhost:3000/playable/subtitles/endpoint.vtt",
     "label": "English",
-    "format": "vtt"
+    "format": "vtt",
+    "provider": {
+        "id": "provider_123",
+        "name": "Example Provider"
+    }
 }
 ```
 
@@ -504,15 +506,17 @@ Default: `web`.
 ```json
 {
     "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
-    "url": {
-        "upstream": "https://provider.com/subs/abc1234.vtt",
-        "upstreamHeaders": {
-            "Referer": "https://provider.com/download/abcd1234",
-            "more": "custom headers as needed"
-        }
+    "url": "https://provider.com/subs/blocked/abc1234.vtt",
+    "headers": {
+        "Referer": "https://provider.com/download/abcd1234",
+        "more": "custom headers as needed"
     },
     "label": "English",
-    "format": "vtt"
+    "format": "vtt",
+    "provider": {
+        "id": "provider_123",
+        "name": "Example Provider"
+    }
 }
 ```
 
@@ -520,17 +524,19 @@ Default: `web`.
 
 - **`id`** (string): Unique subtitle identifier (e.g. UUID v4).
 
-- **`url`** (string or object): URL to the subtitle file.
-    - For `web` platform: A string representing the URL to the subtitle file. This URL must be directly usable in HTML5 track elements without CORS issues.
-    - For `native` platform: An object containing:
-        - `upstream` (string): The original URL to the subtitle file from the provider, which may require CORS handling or custom headers.
-        - `upstreamHeaders` (object): Key-value pairs of HTTP (and non-standard HTTP) headers that should be included when accessing the `upstream` URL.
+- **`url`** (string): For `web`: A string representing the URL to the subtitle file that can be used directly in HTML5 track elements without CORS issues. For `native`: A string representing the original URL to the subtitle file from the provider, which may require CORS handling or custom headers (provided in the `headers` field).
+
+- **`headers`** (object, only for `native` platform): Key-value pairs of HTTP (and non-standard HTTP) headers that should be included when accessing the `url` for native player implementations that can handle CORS and custom headers. For `web` platform, this field is not included, and the provided `url` must be accessible without additional headers or CORS restrictions without additional headers.
 
 - **`label`** (string): Human-readable language name for the subtitle track. default/unknown --> `Unknown`
 
 - **`format`** (string): Subtitle format, one of:
     - `vtt` — WebVTT (preferred for web; default).
     - `srt` — SubRip.
+
+- **`provider`** (object): Information about the upstream provider.
+    - `id` (string): Unique provider identifier.
+    - `name` (string): Human-readable provider name.
 
 #### 6.3.3 Handling Unknown Subtitle Data
 
@@ -557,7 +563,7 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 - **`code`** (string): Machine-readable warning/error code.
 - **`message`** (string): Human-readable description.
-- **`field`** (string, optional): JSON path to the affected field.
+- **`source`** (string): Identifier of the source of the issue (e.g., provider ID). If empty, applies to the whole response.
 - **`severity`** (string): One of:
     - `warning` — Non-fatal issue.
     - `error` — Fatal issue.
@@ -580,7 +586,7 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 ```json
 {
     "error": {
-        "code": "NOT_FOUND",
+        "code": "INVALID_TMDB_ID",
         "message": "No media found with the provided TMDB ID",
         "details": {
             "parameter": "id",
@@ -605,7 +611,7 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 | Error Code               | HTTP Status | Description                             |
 | ------------------------ | ----------- | --------------------------------------- |
-| `INVALID_TMDB_ID`        | 400         | Invalid TMDB ID format.                 |
+| `INVALID_TMDB_ID`        | 400         | Invalid TMDB ID                         |
 | `INVALID_PARAMETER`      | 400         | Invalid query/path parameter.           |
 | `MISSING_PARAMETER`      | 400         | Required parameter missing.             |
 | `INVALID_SEASON`         | 400         | Season number out of valid range.       |
@@ -661,8 +667,8 @@ When the TMDB ID is valid but no streaming sources are available:
 ```json
 {
     "error": {
-        "code": "NOT_FOUND",
-        "message": "No media found with TMDB ID: 99999999"
+        "code": "INVALID_TMDB_ID",
+        "message": "No media found with the provided TMDB ID"
     },
     "traceId": "abc-123"
 }
@@ -788,7 +794,7 @@ Clients SHOULD:
 
 ## 11. Complete Examples
 
-### 11.1 Movie Request — Success with Multiple Sources
+### 11.1 Movie Request — Web Platform (Default)
 
 **Request**
 
@@ -797,7 +803,7 @@ GET /v1/movies/155
 Accept: application/json
 ```
 
-Note that the `platform` query parameter is not included, so the response will use the default `web` structure for sources and subtitles.
+Since the `platform` query parameter is omitted, the response uses the default `web` structure. All `url` fields are accessible without additional headers or CORS restrictions directly in browsers without requiring custom headers or proxy handling by the client.
 
 **Response: 200 OK**
 
@@ -809,6 +815,7 @@ Note that the `platform` query parameter is not included, so the response will u
         {
             "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
             "url": "https://api.example.com/playable/source/1/master.m3u8",
+            "streamable": true,
             "type": "hls",
             "quality": "4k",
             "audioTracks": ["Original", "English"],
@@ -820,6 +827,7 @@ Note that the `platform` query parameter is not included, so the response will u
         {
             "id": "2b39e8b4-cf6c-4c89-88cf-6fbb55e0f4d3",
             "url": "https://api.example.com/playable/source/2/video.mp4",
+            "streamable": false,
             "type": "mp4",
             "quality": "FHD",
             "audioTracks": ["English"],
@@ -829,37 +837,23 @@ Note that the `platform` query parameter is not included, so the response will u
             }
         }
     ],
-    "downloads": [
-        {
-            "id": "7e9bbdc5-9df7-4df2-91b1-d6fd7e912b45",
-            "url": "https://downloads.example.com/files/movie-155.mkv",
-            "type": "mkv",
-            "quality": "4k",
-            "audioTracks": ["Original"],
-            "provider": {
-                "id": "provider_archive",
-                "name": "Archive Provider"
-            }
-        }
-    ],
     "subtitles": [
         {
             "id": "ec9cf9b0-ff1f-4e69-80cb-ef28bb4f6db8",
             "url": "https://api.example.com/subtitles/en-155.vtt",
             "label": "English",
-            "format": "vtt"
-        },
-        {
-            "id": "9eac5bb7-3cf5-4475-a2d5-1a7eaf9f9e91",
-            "url": "https://api.example.com/subtitles/es-155.vtt",
-            "label": "Spanish",
-            "format": "vtt"
+            "format": "vtt",
+            "provider": {
+                "id": "provider_alpha",
+                "name": "Provider Alpha"
+            }
         }
     ],
     "diagnostics": [
         {
             "code": "PARTIAL_SCRAPE",
-            "message": "Some providers failed during scraping",
+            "message": "Server 1 of Alpha failed during scraping",
+            "source": "provider_alpha",
             "severity": "warning"
         }
     ]
@@ -877,6 +871,8 @@ GET /v1/tv/1396/seasons/1/episodes/1?platform=native
 Accept: application/json
 ```
 
+For the `native` platform, the backend returns upstream URLs directly and includes the required request headers for native player implementations.
+
 **Response: 200 OK**
 
 ```json
@@ -886,13 +882,12 @@ Accept: application/json
     "sources": [
         {
             "id": "f54cdb9f-f7dd-4f53-8456-d31a94f27ef1",
-            "url": {
-                "upstream": "https://upstream.provider.com/stream/master.m3u8",
-                "upstreamHeaders": {
-                    "Referer": "https://upstream.provider.com/watch/1396-1-1",
-                    "User-Agent": "ExampleNativePlayer/1.0"
-                }
+            "url": "https://upstream.provider.com/stream/master.m3u8",
+            "headers": {
+                "Referer": "https://upstream.provider.com/watch/1396-1-1",
+                "User-Agent": "ExampleNativePlayer/1.0"
             },
+            "streamable": true,
             "type": "hls",
             "quality": "HD",
             "audioTracks": ["Original", "English", "German"],
@@ -902,18 +897,19 @@ Accept: application/json
             }
         }
     ],
-    "downloads": [],
     "subtitles": [
         {
             "id": "ee7d8e7f-8f6f-4d66-8c71-9d5f50a2df17",
-            "url": {
-                "upstream": "https://subs.provider.com/1396-s1-e1-en.vtt",
-                "upstreamHeaders": {
-                    "Referer": "https://subs.provider.com"
-                }
+            "url": "https://subs.provider.com/1396-s1-e1-en.vtt",
+            "headers": {
+                "Referer": "https://subs.provider.com"
             },
             "label": "English",
-            "format": "vtt"
+            "format": "vtt",
+            "provider": {
+                "id": "provider_streamhub",
+                "name": "StreamHub"
+            }
         }
     ],
     "diagnostics": []
@@ -922,7 +918,7 @@ Accept: application/json
 
 ---
 
-### 11.3 No Sources Available
+### 11.3 Media Exists but No Sources Available
 
 **Request**
 
@@ -930,6 +926,8 @@ Accept: application/json
 GET /v1/movies/999999
 Accept: application/json
 ```
+
+The TMDB ID is valid, but the backend could not find any playable or downloadable sources.
 
 **Response: 404 Not Found**
 
@@ -945,7 +943,7 @@ Accept: application/json
 
 ---
 
-### 11.4 Invalid TMDB ID
+### 11.4 Invalid TMDB ID Format
 
 **Request**
 
@@ -953,6 +951,8 @@ Accept: application/json
 GET /v1/movies/not-a-number
 Accept: application/json
 ```
+
+TMDB IDs must contain numeric characters only.
 
 **Response: 400 Bad Request**
 
@@ -981,6 +981,8 @@ GET /v1/movies/155
 Accept: application/xml
 ```
 
+OMSS v1.1 supports JSON responses only.
+
 **Response: 406 Not Acceptable**
 
 ```json
@@ -995,7 +997,7 @@ Accept: application/xml
 
 ---
 
-### 11.6 Refresh Endpoint
+### 11.6 Refresh Endpoint — Success
 
 **Request**
 
@@ -1003,6 +1005,8 @@ Accept: application/xml
 POST /v1/refresh/cf6c3c2d-17be-4a5a-9488-bf12e70dca5a
 Accept: application/json
 ```
+
+The backend invalidates the cached source immediately. The next request for this media will trigger a fresh scrape.
 
 **Response: 200 OK**
 
@@ -1023,6 +1027,8 @@ POST /v1/refresh/unknown-id
 Accept: application/json
 ```
 
+The provided response ID does not exist or has already expired.
+
 **Response: 404 Not Found**
 
 ```json
@@ -1035,28 +1041,33 @@ Accept: application/json
 }
 ```
 
+---
+
 ### 11.8 Root Endpoint
+
+**Request**
 
 ```http
 GET /
 Accept: application/json
 ```
 
+The root endpoint provides general information about the OMSS backend implementation and available endpoints.
+
 **Response: 200 OK**
 
 ```json
 {
     "name": "Example OMSS Implementation",
-    "note": "OMSS backend is running",
     "version": "1.1.0",
     "status": "operational",
     "spec": "omss",
+    "note": "OMSS backend is running",
     "endpoints": {
         "movie": "/v1/movies/{id}",
-        "tv": "/v1/tv/{id}/seasons/{s}/episodes/{e}",
-        "refresh": "/v1/refresh/{id}"
+        "tv": "/v1/tv/{id}/seasons/{s}/episodes/{e}"
     },
-    "medias": {
+    "media": {
         "movies": "*",
         "tv": "*"
     }
@@ -1065,27 +1076,31 @@ Accept: application/json
 
 ---
 
-### 11.8.2 Root Endpoint with Custom Note and Limited Media
+### 11.9 Versioned Root Endpoint with Limited Media Availability
+
+**Request**
 
 ```http
 GET /v1
 Accept: application/json
 ```
 
+This example shows a backend that exposes only a limited set of available movies and TV episodes.
+
 **Response: 200 OK**
 
 ```json
 {
-    "spec": "omss",
+    "name": "Limited Example Backend",
     "version": "1.1.0",
     "status": "operational",
+    "spec": "omss",
     "endpoints": {
         "movie": "/v1/movies/{id}",
-        "tv": "/v1/tv/{id}/seasons/{s}/episodes/{e}",
-        "refresh": "/v1/refresh/{id}"
+        "tv": "/v1/tv/{id}/seasons/{s}/episodes/{e}"
     },
-    "note": "Welcome to the OMSS API! Here you can find streaming sources for movies and TV shows by their TMDB IDs. Use the provided endpoints to retrieve sources and subtitles. For more details, check the documentation linked in the spec field.",
-    "medias": {
+    "note": "This backend exposes only selected media.",
+    "media": {
         "movies": [123, 456],
         "tv": [
             {
