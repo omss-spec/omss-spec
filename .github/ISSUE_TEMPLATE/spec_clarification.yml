@@ -1,7 +1,7 @@
 name: Specification Clarification
 description: Ask for clarification about unclear or ambiguous parts of the OMSS specification
 title: '[Question]: '
-labels: ['question', 'documentation']
+labels: ['question']
 body:
     - type: markdown
       attributes:

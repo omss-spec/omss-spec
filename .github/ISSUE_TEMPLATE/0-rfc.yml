@@ -1,7 +1,7 @@
 name: RFC Proposal
 description: Propose a normative change, extension, or clarification to the OMSS specification
 title: '[RFC]: '
-labels: ['rfc', 'needs-discussion']
+labels: ['REQUEST FOR COMMENT', 'rfc', 'needs-triage']
 body:
     - type: markdown
       attributes:
