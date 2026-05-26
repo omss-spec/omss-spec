@@ -16,7 +16,8 @@ body:
           label: OMSS Version
           description: Which version of the specification is affected?
           options:
-              - v1.0 (latest)
+              - v1.1 (latest)
+              - v1.0
               - draft
           default: 0
       validations:
@@ -31,7 +32,7 @@ body:
               - Endpoints (API paths)
               - Request/Response Schemas
               - Error Handling
-              - Identifier Strategy
+              - Identifier Strategy (includes other-media-type-support)
               - OpenAPI Specification
               - Documentation
               - Examples
@@ -60,6 +61,7 @@ body:
               - File: spec/v1.0/omss-v1.0.md
               - Section: "3.1 Movie Endpoint Response Schema"
               - Line: 145
+              - Spec: v1.0
       validations:
           required: true
 

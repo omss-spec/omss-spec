@@ -18,7 +18,8 @@ body:
           label: OMSS Version
           description: Which version are you asking about?
           options:
-              - v1.0 (latest)
+              - v1.1 (latest)
+              - v1.0
               - draft
           default: 0
       validations:

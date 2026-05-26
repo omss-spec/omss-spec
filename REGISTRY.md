@@ -10,7 +10,7 @@ Ratings are provided based on community feedback and performance. Please note th
 
 ## Backend Registry
 
-Build your own with [the @omss/framework](https://github.com/omss-spec/framework)!
+Build your own with [the `@omss/framework`](https://github.com/omss-spec/framework)!
 
 | Name         | Rating (5 best, 1 avoid) | Notes                               |
 | ------------ | ------------------------ | ----------------------------------- |
@@ -18,7 +18,7 @@ Build your own with [the @omss/framework](https://github.com/omss-spec/framework
 
 ## Frontend Registry
 
-Build your own with [the @omss/sdk](https://github.com/omss-spec/sdk)!
+Build your own with [the `@omss/sdk`](https://github.com/omss-spec/sdk)!
 
 | Name       | Rating (5 best, 1 avoid) | Notes                             |
 | ---------- | ------------------------ | --------------------------------- |

@@ -1,0 +1,133 @@
+name: RFC Proposal
+description: Propose a normative change, extension, or clarification to the OMSS specification
+title: '[RFC]: '
+labels: ['rfc', 'needs-discussion']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for contributing to the evolution of OMSS.
+
+              RFCs are intended for:
+              - New specification capabilities
+              - Behavioral or semantic changes
+              - Cross-implementation interoperability concerns
+              - Versioning or compatibility policy updates
+              - Breaking changes or major extensions
+
+              Please provide enough detail for implementers to evaluate the proposal.
+
+    - type: input
+      id: summary
+      attributes:
+          label: RFC Summary
+          description: Provide a concise one-sentence summary of the proposal
+          placeholder: Add HDR capability metadata to source objects
+      validations:
+          required: true
+
+    - type: dropdown
+      id: rfc-type
+      attributes:
+          label: RFC Type
+          description: What kind of RFC is this?
+          options:
+              - Specification clarification
+              - New capability / extension
+              - Schema or protocol change
+              - Interoperability / conformance
+              - Security or privacy improvement
+              - Versioning / compatibility policy
+              - Breaking change
+              - Documentation / terminology refinement
+              - Governance / process
+              - Other
+      validations:
+          required: true
+
+    - type: textarea
+      id: motivation
+      attributes:
+          label: Abstract & Motivation
+          description: What problem does this RFC solve? Why is the change necessary?
+          placeholder: |
+              Example: Different OMSS implementations currently expose HDR-related metadata inconsistently or not at all. This makes it difficult for clients to reliably discover advanced video capabilities and creates interoperability issues between providers and frontends.
+      validations:
+          required: true
+
+    - type: textarea
+      id: proposal
+      attributes:
+          label: Detailed Proposal
+          description: Describe the proposed specification changes in detail
+          placeholder: |
+              Example:
+
+              Add an optional `videoFeatures` object to the source schema.
+
+              ```json
+              "videoFeatures": {
+                "hdr": true,
+                "hdrFormat": "dolby-vision",
+                "codec": "hevc"
+              }
+              ```
+
+              Normative requirements:
+              - Clients MUST ignore unknown fields
+              - Providers MAY omit the object entirely
+              - `hdrFormat` MUST only be present when `hdr=true`
+      validations:
+          required: true
+
+    - type: textarea
+      id: semantics
+      attributes:
+          label: Normative Semantics
+          description: Define expected behavior, constraints, and interoperability rules
+          placeholder: |
+              Example:
+              - `hdr=true` indicates the source contains HDR video
+              - `hdrFormat` defines the HDR standard in use
+              - Clients MUST treat unknown HDR formats as unsupported but non-fatal
+              - Absence of `videoFeatures` MUST NOT imply SDR compatibility
+
+    - type: dropdown
+      id: breaking-change
+      attributes:
+          label: Breaking Change?
+          description: Does this RFC introduce breaking behavior?
+          options:
+              - 'No - backward compatible'
+              - 'Yes - breaking change'
+              - 'Partially - migration required'
+              - 'Uncertain'
+          default: 0
+      validations:
+          required: true
+
+    - type: textarea
+      id: references
+      attributes:
+          label: References / Prior Art
+          description: Link relevant standards, implementations, discussions, or related RFCs
+          placeholder: |
+              - Related issue: #123
+              - DASH-IF HDR signaling guidance
+              - Existing implementation examples
+
+    - type: checkboxes
+      id: checklist
+      attributes:
+          label: Pre-submission Checklist
+          options:
+              - label: I have searched existing RFCs and issues for duplicates
+                required: true
+              - label: I have explained the motivation and interoperability impact
+                required: true
+              - label: I have documented any breaking-change implications
+                required: true
+              - label: I understand this proposal may require community discussion before acceptance and might not be accepted as-is
+                required: true
+              - label: I agree to follow this project's Code of Conduct
+                required: true

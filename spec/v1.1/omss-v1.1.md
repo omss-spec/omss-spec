@@ -20,9 +20,9 @@ License: MIT
 7. [Error Handling](#7-error-handling)
 8. [Caching and Performance](#8-caching-and-performance)
 9. [Security Considerations](#9-security-considerations)
-10. [Compliance Requirements](#10-compliance-requirements)
-11. [Versioning and Compatibility](#11-versioning-and-compatibility)
-12. [Provider Data Handling](#12-provider-data-handling)
+10. [Versioning and Compatibility](#10-versioning-and-compatibility)
+11. [Complete Examples](#11-complete-examples)
+12. [License](#12-license)
 
 ---
 
@@ -728,9 +728,9 @@ Backends MUST validate:
 
 ---
 
-## 11. Versioning and Compatibility
+## 10. Versioning and Compatibility
 
-### 11.1 Semantic Versioning
+### 10.1 Semantic Versioning
 
 OMSS follows Semantic Versioning 1.0.0:
 
@@ -743,7 +743,7 @@ MAJOR.MINOR.PATCH
 - **MINOR**: Backward-compatible new features.
 - **PATCH**: Backward-compatible bug fixes/clarifications.
 
-### 11.2 URL Versioning
+### 10.2 URL Versioning
 
 Version is in the URL path:
 
@@ -752,7 +752,7 @@ Version is in the URL path:
 /v2/movies/155   # Version 2.x (future)
 ```
 
-### 11.4 Deprecation Policy
+### 10.4 Deprecation Policy
 
 This is best effort, but especially in the beginning, this might not be followed strictly, since the spec is still evolving and breaking changes are expected. However, once the spec stabilizes, the following deprecation policy should be followed:
 
@@ -768,7 +768,7 @@ This is best effort, but especially in the beginning, this might not be followed
 4. **Support**: Deprecated features are supported for ≥ 1 major version.
 5. **Removal**: Only in a new major version.
 
-### 11.5 Client Compatibility Expectations
+### 10.5 Client Compatibility Expectations
 
 Clients MUST:
 
@@ -786,9 +786,9 @@ Clients SHOULD:
 
 ---
 
-## 13. Complete Examples
+## 11. Complete Examples
 
-### 13.1 Movie Request — Success with Multiple Sources
+### 11.1 Movie Request — Success with Multiple Sources
 
 **Request**
 
@@ -868,7 +868,7 @@ Note that the `platform` query parameter is not included, so the response will u
 
 ---
 
-### 13.2 TV Episode Request — Native Platform
+### 11.2 TV Episode Request — Native Platform
 
 **Request**
 
@@ -922,7 +922,7 @@ Accept: application/json
 
 ---
 
-### 13.3 No Sources Available
+### 11.3 No Sources Available
 
 **Request**
 
@@ -945,7 +945,7 @@ Accept: application/json
 
 ---
 
-### 13.4 Invalid TMDB ID
+### 11.4 Invalid TMDB ID
 
 **Request**
 
@@ -972,7 +972,7 @@ Accept: application/json
 
 ---
 
-### 13.5 Unsupported Accept Header
+### 11.5 Unsupported Accept Header
 
 **Request**
 
@@ -995,7 +995,7 @@ Accept: application/xml
 
 ---
 
-### 13.6 Refresh Endpoint
+### 11.6 Refresh Endpoint
 
 **Request**
 
@@ -1014,7 +1014,7 @@ Accept: application/json
 
 ---
 
-### 13.7 Refresh Endpoint — Unknown ID
+### 11.7 Refresh Endpoint — Unknown ID
 
 **Request**
 
@@ -1035,7 +1035,7 @@ Accept: application/json
 }
 ```
 
-### 13.8 Root Endpoint
+### 11.8 Root Endpoint
 
 ```http
 GET /
@@ -1065,7 +1065,7 @@ Accept: application/json
 
 ---
 
-### 4.1.2 API Base Endpoint
+### 11.8.2 Root Endpoint with Custom Note and Limited Media
 
 ```http
 GET /v1
@@ -1108,6 +1108,6 @@ Accept: application/json
 
 ---
 
-## 14. License
+## 12. License
 
 This specification is licensed under the MIT License.
