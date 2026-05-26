@@ -6,16 +6,20 @@ The registry is maintained by the OMSS community and is open for contributions. 
 
 Frontends and backends listed here can either be open source or closed source, aslong as they implement the OMSS specification. The url in the `name` column should point to the service's endpoint or source code repository.
 
-Ratings are provided based on community feedback, uptime and performance. Please note that ratings are subjective and may change over time as more feedback is received.
+Ratings are provided based on community feedback and performance. Please note that ratings are subjective and may change over time as more feedback is received.
 
 ## Backend Registry
 
-| Name | Rating (5 best, 1 avoid) | Notes |
-| ---- | ------------------------ | ----- |
-| CinePro/Core | 5 | https://github.com/cinepro-org/core | 
+Build your own with [the @omss/framework](https://github.com/omss-spec/framework)!
+
+| Name         | Rating (5 best, 1 avoid) | Notes                               |
+| ------------ | ------------------------ | ----------------------------------- |
+| CinePro/Core | 5                        | https://github.com/cinepro-org/core |
 
 ## Frontend Registry
 
-| Name | Rating (5 best, 1 avoid) | Notes |
-| ---- | ------------------------ | ----- |
-| CinePro/Ui | 5 | https://github.com/cinepro-org/ui | 
+Build your own with [the @omss/sdk](https://github.com/omss-spec/sdk)!
+
+| Name       | Rating (5 best, 1 avoid) | Notes                             |
+| ---------- | ------------------------ | --------------------------------- |
+| CinePro/Ui | 5                        | https://github.com/cinepro-org/ui |

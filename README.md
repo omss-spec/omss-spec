@@ -5,12 +5,12 @@
 # Open Media Streaming Specification
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](/spec/v1.0/omss-v1.0.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](/spec/v1.1/omss-v1.1.md)
 [![Specification](https://img.shields.io/badge/spec-OMSS-orange.svg)](https://github.com/omss-spec/omss-spec)
 
 **A standardized REST API specification for streaming media backends**
 
-[Specification](/spec/v1.0/omss-v1.0.md) · [OpenAPI](/spec/v1.0/omss-v1.0.yml) · [Contributing](CONTRIBUTING.md) · [Discussions](https://github.com/omss-spec/omss-spec/discussions)
+[Specification](/spec/v1.1/omss-v1.1.md) · [OpenAPI](/spec/v1.1/omss-v1.1.yml) · [Contributing](CONTRIBUTING.md) · [Discussions](https://github.com/omss-spec/omss-spec/discussions)
 
 </div>
 
@@ -42,27 +42,25 @@ Every streaming backend has custom API formats:
 
 ## 📖 Specification
 
-**Current Version:** [OMSS v1.0.0](/spec/v1.0/omss-v1.0.md) (Released January 15, 2026)
+**Current Version:** [OMSS v1.1.0](/spec/v1.1/omss-v1.1.md) (pre-release)
 
 ### Core Endpoints
 
 ```http
-GET /v1/movies/{id}                                 # Movie streaming sources
-GET /v1/tv/{id}/seasons/{s}/episodes/{e}            # TV episode streaming sources
-GET /v1/proxy?data={base64url_encoded_json}         # Proxy to upstream providers
-GET /v1/refresh/{responseid}                        # Invalidate cache for sources
-GET / or /v1 or /v1/health                          # Health check
+GET /v1/movies/{id}?platform=native                     # Movie streaming sources
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web   # TV episode streaming sources
+POST /v1/refresh/{id}                                    # Invalidate cache for sources
+GET / or /v1 or /v1/health                              # Health check
 ```
 
 ### Key Features
 
 - **TMDB-based identifiers** — Movies and TV shows identified by TMDB IDs
-- **Proxy-based delivery** — All source URLs routed through backend proxy for header injection
 - **Multi-source support** — Multiple streaming providers per content item
 - **Multi-language audio** — Audio tracks with language codes and labels
 - **Subtitle support** — VTT, SRT, ASS, SSA formats with language labels
-- **Quality metadata** — Resolution info (1080p, 720p, etc.) with inference support
-- **Diagnostic reporting** — Warnings for partial scrapes, inferred metadata
+- **Quality metadata** — Resolution info (FHD, HD, etc.)
+- **Diagnostic reporting** — Warnings for partial scrapes, and errors
 - **Expiration tracking** — `expiresAt` timestamp for cache management
 - **Standardized errors** — Machine-readable error codes with trace IDs
 - **URL versioning** — `/v1/` prefix for future compatibility
@@ -75,32 +73,24 @@ GET / or /v1 or /v1/health                          # Health check
 
 **Implement an OMSS-compliant backend:**
 
-1. Read the [full specification](/spec/v1.0/omss-v1.0.md)
-2. Review the [OpenAPI spec](/spec/v1.0/omss-v1.0.yml)
-3. Implement the 5 required endpoints
+Either do it yourself or [use the @omss/framework](https://github.com/omss-spec/framework)
+
+1. Read the [full specification](/spec/v1.1/omss-v1.1.md)
+2. Review the [OpenAPI spec](/spec/v1.1/omss-v1.1.yml)
+3. Implement the required endpoints
 4. Return responses matching the schemas
-5. Use proxy paths for all source/subtitle URLs
-
-**Minimum compliance requirements:**
-
-- ✅ `GET /v1/movies/{id}` returns `SourceResponse`
-- ✅ `GET /v1/tv/{id}/seasons/{s}/episodes/{e}` returns `SourceResponse`
-- ✅ `GET /v1/proxy?data=...` proxies upstream requests
-- ✅ `GET /v1/refresh/{responseid}` remove response from cache
-- ✅ `GET /` or `/v1` or `/v1/health` returns backend info
-- ✅ All errors return `ErrorResponse` with `code`, `message`, `traceId`
-- ✅ HTTPS in production (HTTP allowed for localhost only)
 
 ### For Frontend Developers
 
 **Integrate with any OMSS backend:**
 
-1. Review the [OpenAPI specification](/spec/v1.0/omss-v1.0.yml)
+Either do it yourself or [use the @omss/sdk](https://github.com/omss-spec/sdk)
+
+1. Review the [OpenAPI specification](/spec/v1.1/omss-v1.1.yml)
 2. Point your app to an OMSS backend URL
 3. Call `/v1/movies/{id}` or `/v1/tv/{id}/seasons/{s}/episodes/{e}`
 4. Parse `SourceResponse` and extract `sources` array
-5. Play sources using the `url` field (proxy paths)
-6. Load `subtitles` if available
+5. Play your content!
 
 **Frontend benefits:**
 
@@ -115,7 +105,7 @@ GET / or /v1 or /v1/health                          # Health check
 **Request:**
 
 ```http
-GET /v1/movies/155 HTTP/1.1
+GET /v1/movies/155?platform=web HTTP/1.1
 Host: api.example.com
 ```
 
@@ -123,33 +113,66 @@ Host: api.example.com
 
 ```json
 {
-    "responseid": "bdfa40a7-a468-461c-8563-7a0c165f252c",
-    "expiresAt": "2026-01-15T18:00:00Z",
+    "id": "bdfa40a7-a468-461c-8563-7a0c165f252c",
+    "expiresAt": "2026-01-11T20:56:00Z",
     "sources": [
         {
-            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fstream.m3u8%22%7D",
+            "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
+            "url": "https://api.example.com/playable/source/1/master.m3u8",
             "type": "hls",
-            "quality": "1080p",
-            "audioTracks": [
-                {
-                    "language": "en",
-                    "label": "English",
-                }
-            ],
+            "quality": "4k",
+            "audioTracks": ["Original", "English"],
             "provider": {
-                "id": "prov_1",
-                "name": "Provider One"
+                "id": "provider_alpha",
+                "name": "Provider Alpha"
+            }
+        },
+        {
+            "id": "2b39e8b4-cf6c-4c89-88cf-6fbb55e0f4d3",
+            "url": "https://api.example.com/playable/source/2/video.mp4",
+            "type": "mp4",
+            "quality": "FHD",
+            "audioTracks": ["English"],
+            "provider": {
+                "id": "provider_beta",
+                "name": "Provider Beta"
+            }
+        }
+    ],
+    "downloads": [
+        {
+            "id": "7e9bbdc5-9df7-4df2-91b1-d6fd7e912b45",
+            "url": "https://downloads.example.com/files/movie-155.mkv",
+            "type": "mkv",
+            "quality": "4k",
+            "audioTracks": ["Original"],
+            "provider": {
+                "id": "provider_archive",
+                "name": "Archive Provider"
             }
         }
     ],
     "subtitles": [
         {
-            "url": "http://localhost:3000/v1/proxy?data=%7B%22url%22%3A%22https%3A%2F%2Fcdn.example.com%2Fsub.vtt%22%7D",
+            "id": "ec9cf9b0-ff1f-4e69-80cb-ef28bb4f6db8",
+            "url": "https://api.example.com/subtitles/en-155.vtt",
             "label": "English",
+            "format": "vtt"
+        },
+        {
+            "id": "9eac5bb7-3cf5-4475-a2d5-1a7eaf9f9e91",
+            "url": "https://api.example.com/subtitles/es-155.vtt",
+            "label": "Spanish",
             "format": "vtt"
         }
     ],
-    "diagnostics": []
+    "diagnostics": [
+        {
+            "code": "PARTIAL_SCRAPE",
+            "message": "Some providers failed during scraping",
+            "severity": "warning"
+        }
+    ]
 }
 ```
 
@@ -157,8 +180,8 @@ Host: api.example.com
 
 ## 📋 Documentation
 
-- **[OMSS v1.0 Specification](/spec/v1.0/omss-v1.0.md)** — Full human-readable spec
-- **[OpenAPI Specification](/spec/v1.0/omss-v1.0.yml)** — Machine-readable API definition (Swagger/Redoc compatible)
+- **[OMSS v1.1 Specification](/spec/v1.1/omss-v1.1.md)** — Full human-readable spec
+- **[OpenAPI Specification](/spec/v1.1/omss-v1.1.yml)** — Machine-readable API definition (Swagger/Redoc compatible)
 - **[Contributing Guide](CONTRIBUTING.md)** — How to propose changes
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines
 - **[Security Policy](SECURITY.md)** — Reporting vulnerabilities
@@ -171,11 +194,11 @@ Host: api.example.com
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    OMSS v1.0 Standard                   │
+│                    OMSS v1.1 Standard                   │
 │              (Open Specification Document)              │
 └─────────────────────────────────────────────────────────┘
-                          ▲
-          ┌───────────────┼───────────────┐
+
+          ┌───────────────────────────────┐
           │               │               │
           ▼               ▼               ▼
     ┌──────────┐    ┌──────────┐    ┌──────────┐
@@ -226,45 +249,10 @@ OMSS follows semantic versioning:
 
 To propose changes:
 
-1. Open a [GitHub Discussion](https://github.com/omss-spec/omss-spec/discussions) describing the problem
-2. If there's consensus, create an issue with a detailed proposal
+1. Open a [GitHub Issue](https://github.com/omss-spec/omss-spec/issues/new?template=rfc.yml) describing the problem
+2. If there's consensus, fork the repo and make your changes in a new branch
 3. Submit a pull request with spec changes
 4. Maintainers review and merge if approved
-
----
-
-## 📊 Compliance
-
-### Required for OMSS v1.0 Compliance
-
-A backend **MUST** implement:
-
-1. **Core endpoints:**
-    - `GET /v1/movies/{id}`
-    - `GET /v1/tv/{id}/seasons/{s}/episodes/{e}`
-    - `GET /v1/proxy?data={encoded_data}`
-    - `GET /v1/refresh{responseid}`
-    - `GET /`, `/v1`, or `/v1/health`
-
-2. **Source object** with required fields:
-    - `id`, `url` (proxy path), `type`, `quality`, `audioTracks`, `provider`
-
-3. **Subtitle object** with required fields:
-    - `url` (proxy path), `label`, `format`
-
-4. **Error responses** for all non-2xx responses:
-    - `error.code`, `error.message`, `traceId`
-
-5. **HTTP status codes:**
-    - `200` for success
-    - `400` for bad requests
-    - `404` for not found
-    - `500` for server errors
-
-6. **Proxy routing:** All `url` fields MUST use proxy paths
-7. **HTTPS** in production (HTTP allowed for `localhost` only)
-
-A frontend **MUST** use the OMSS v1.0 endpoints and response formats to ensure compatibility with any compliant backend.
 
 ---
 
@@ -290,28 +278,30 @@ You are free to implement, extend, and distribute OMSS-compliant systems without
 
 TMDB provides stable, comprehensive IDs for movies and TV shows. It's free, well-maintained, and widely adopted.
 
-### Why proxy-based URLs?
-
-Many streaming providers require specific headers (Referer, User-Agent). Proxying through the backend allows header injection without CORS issues.
-
 ### Can I add custom fields to responses?
 
 Yes! OMSS clients MUST ignore unknown fields, so backends can add custom metadata. Just don't remove required fields.
 
 ### How do I handle missing quality/language metadata?
 
-Use `"unknown"` for quality and default to `"en"` for language. Add diagnostics explaining inference.
+Use `"Auto"` for quality and default to `"Original"` for language.
 
 ### What about authentication?
 
-OMSS v1.0 is authentication-agnostic. Backends can implement auth (API keys, OAuth, etc.) as needed, although we recommend not to publicly expose OMSS endpoints at all. In our view, OMSS backends should be private services used only by trusted frontends on your LAN or personal devices.
+OMSS v1.1 is authentication-agnostic. Backends can implement auth (API keys, OAuth, etc.) as needed, although we recommend not to publicly expose OMSS endpoints at all. In our view, OMSS backends should be private services used only by trusted frontends on your LAN or personal devices.
 To host movie streaming backends publicly you risk abuse from unauthorized users leeching your bandwidth and resources.
+
+---
+
+## Note
+
+This is **not** a piracy tool or a scraper framework per se. OMSS is a **specification** for how streaming backends should expose their data. That means, you can use OMSS to digitalize your own media collection YOU own.
 
 ---
 
 <div align="center">
 
-**[Read the Full Specification →](/spec/v1.0/omss-v1.0.md)**
+**[Read the Full Specification →](/spec/v1.1/omss-v1.1.md)**
 
 Built with ❤️ by the OMSS Foundation
 

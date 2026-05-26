@@ -97,13 +97,9 @@
 **Areas needing special attention:**
 
 -
--
-
-**Questions for reviewers:**
+- **Questions for reviewers:**
 
 -
--
-
----
+- ***
 
 <!-- Thank you for contributing to OMSS! 🎉 -->

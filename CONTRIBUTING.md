@@ -5,21 +5,25 @@ Thank you for your interest in contributing to the Open Media Streaming Specific
 ## 🎯 Ways to Contribute
 
 ### 1. Documentation Improvements
+
 - Fix typos or clarify ambiguous language
 - Add examples or use cases
 - Improve formatting or structure
 
 ### 2. Specification Issues
+
 - Report ambiguities or inconsistencies
 - Suggest clarifications
 - Identify edge cases not covered
 
 ### 3. Feature Proposals
+
 - Propose new optional features
 - Suggest extensions to the specification
 - Submit RFCs for major changes
 
 ### 4. Implementation Feedback
+
 - Share experiences implementing OMSS
 - Report real-world challenges
 - Suggest practical improvements
@@ -52,7 +56,7 @@ Thank you for your interest in contributing to the Open Media Streaming Specific
 
 ### For Major Changes (New Features, Breaking Changes)
 
-1. **Open an RFC (Request for Comments)** in Discussions
+1. **Open an RFC (Request for Comments)**
 2. Use the RFC template (see below)
 3. Allow at least 2 weeks for community feedback
 4. Address concerns and iterate on design
@@ -65,24 +69,31 @@ Thank you for your interest in contributing to the Open Media Streaming Specific
 # RFC: [Feature Name]
 
 ## Summary
+
 Brief description of the proposed change (2-3 sentences)
 
 ## Motivation
+
 Why is this change needed? What problem does it solve?
 
 ## Detailed Design
+
 Technical details of the proposed solution
 
 ## Drawbacks
+
 What are the downsides or limitations?
 
 ## Alternatives
+
 What other approaches were considered?
 
 ## Backward Compatibility
+
 Does this break existing OMSS v1.0 implementations?
 
 ## Open Questions
+
 What needs to be resolved before implementation?
 ```
 
@@ -102,15 +113,19 @@ What needs to be resolved before implementation?
 
 ```markdown
 ## Description
+
 [What does this PR do?]
 
 ## Motivation
+
 [Why is this change needed?]
 
 ## Changes
+
 - [List specific changes]
 
 ## Related Issues
+
 Closes #[issue number]
 ```
 
@@ -128,38 +143,25 @@ All contributors must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 ## 🎨 Style Guidelines
 
 ### Markdown
+
 - Use ATX-style headers (`#` not `===`)
 - One sentence per line in prose
 - Use fenced code blocks with language tags
 - Reference other docs with relative links
 
 ### OpenAPI YAML
+
 - 2-space indentation
 - Clear, descriptive `operationId`s
 - Include examples for all schemas
 - Document all parameters
 
 ### JSON Examples
+
 - 4-space indentation
 - Use realistic example data
 - Include comments (when helpful)
 - Validate against schemas
-
-## 🏷️ Issue Labels
-
-- `bug` - Something is wrong in the spec
-- `documentation` - Docs improvements
-- `feature` - New feature proposal
-- `question` - Need clarification
-- `breaking-change` - Would affect v1.0 compatibility
-
-## 🚀 Release Process
-
-1. All changes merged to `dev`
-2. Version bump in specification files
-3. Update CHANGELOG.md
-4. Create GitHub release with notes
-5. Announce in Discussions
 
 ## 💬 Communication Channels
 
@@ -170,19 +172,20 @@ All contributors must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 ## 🙏 Recognition
 
 All contributors will be:
+
 - Listed in release notes
-- Credited in CONTRIBUTORS.md
 - Thanked in release announcements
 
 ## 📚 Resources
 
-- [Specification v1.0](spec/v1.0/omss-v1.0.md)
+- [Specification v1.1](spec/v1.1/omss-v1.1.md)
 - [Implementation Guide](docs/implementation-guide.md)
 - [Architecture Overview](docs/architecture.md)
 
 ## ❓ Questions?
 
 If you're unsure about anything:
+
 1. Check existing documentation
 2. Search closed issues
 3. Ask in Discussions
