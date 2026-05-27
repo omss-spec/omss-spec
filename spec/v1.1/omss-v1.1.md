@@ -201,26 +201,32 @@ GET /v1
     "status": "operational",
     "endpoints": {
         "movie": "/v1/movies/{id}",
-        "tv": "/v1/tv/{id}/seasons/{s}/episodes/{e}",
+        "tv": "/v1/tv/{id}/seasons/{s}/episodes/{e}"
     },
     "spec": "omss",
     "note": "Here some description, motivation, disclaimer or anything else. Here you could also link your suggested OMSS frontend.",
     "media": {
         "movies": [123, 456],
-        "tv": [{
-            "id": 1396,
-            "seasons": [
-                {
-                    "season": 1,
-                    "episodes": [1, 2, 3]
-                },
-                {
-                    "season": 2,
-                    "episodes": [1, 2, 3, 4, 5]
-                }
-            ]
-        }]
-    }
+        "tv": [
+            {
+                "id": 1396,
+                "seasons": [
+                    {
+                        "season": 1,
+                        "episodes": [1, 2, 3]
+                    },
+                    {
+                        "season": 2,
+                        "episodes": [1, 2, 3, 4, 5]
+                    }
+                ]
+            }
+        ]
+    },
+    "providers": [
+        { "id": "alpha", "name": "Provider Alpha", "capabilities": ["movies", "tv"] },
+        { "id": "beta", "name": "Provider Beta", "capabilities": ["movies"] }
+    ]
 }
 ```
 
@@ -234,12 +240,16 @@ GET /v1
     - `tv` (string): Path to the TV show endpoint. MUST contain the `{id}`, `{s}` and `{e}` placeholders where the frontend will insert the TMDB ID, season and episode respectively.
 - `spec` (string): When implementing OMSS, this MUST be `"omss"`.
 - `media` (object): field for backends to provide a list of available media.
-    - `movies` (array of integers OR string: '*' as const): List of TMDB movie IDs available in this backend or `'*'` if the backend supports all movies.
-    - `tv` (array of objects or string: '*' as const): List of TMDB TV series IDs with available seasons and episodes, or `'*'`if the backend supports all TV series. You can use`'*'` inside of the tv object to mark a specific series and/or season as available. Each object contains:
+    - `movies` (array of integers OR string: '_' as const): List of TMDB movie IDs available in this backend or `'_'` if the backend supports all movies.
+    - `tv` (array of objects or string: '_' as const): List of TMDB TV series IDs with available seasons and episodes, or `'_'`if the backend supports all TV series. You can use`'\*'` inside of the tv object to mark a specific series and/or season as available. Each object contains:
         - `id` (integer): TMDB series ID.
         - `seasons` (array of objects): List of seasons with available episodes. Each object contains:
             - `season` (integer): Season number.
             - `episodes` (array of integers): List of episode numbers available in this season.
+- `providers` (array of objects): List of providers this backend provides. Each object contains:
+    - `id` (string): Unique provider identifier (MUST BE URL SAFE).
+    - `name` (string): Human-readable provider name.
+    - `capabilities` (array of strings): List of media types the provider supports any of `movies`, `tv` and/or `subtitles`.
 
 **Optional Fields:**
 
@@ -251,6 +261,8 @@ GET /v1
 
 ```http
 GET /v1/movies/{id}?platform=web
+GET /v1/movies/{id}?platform=native
+GET /v1/movies/{id}?platform=web&provider={provider_id}
 ```
 
 **Path Parameters:**
@@ -260,12 +272,14 @@ GET /v1/movies/{id}?platform=web
 **Query Parameters:**
 
 - `platform` (string, optional): Target platform for source optimization. One of `web`, `native`. Default is `web`. **This will change the response structure!**
+- `provider` (string, optional): Specific provider to fetch sources from. MUST be a valid provider ID. The result will stay the same, but the backend shall only return sources from the specified provider.
 
 **Example Request:**
 
 ```http
 GET /v1/movies/155?platform=web
 GET /v1/movies/155?platform=native
+GET /v1/movies/155?platform=web&provider=alpha
 ```
 
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
@@ -276,6 +290,8 @@ GET /v1/movies/155?platform=native
 
 ```http
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=native
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web&provider={provider_id}
 ```
 
 **Path Parameters:**
@@ -287,12 +303,14 @@ GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web
 **Query Parameters:**
 
 - `platform` (string, optional): Target platform for source optimization. One of `web`, `native`. Default is `web`. **This will change the response structure!**
+- `provider` (string, optional): Specific provider to fetch sources from. MUST be a valid provider ID. The result will stay the same, but the backend shall only return sources from the specified provider.
 
 **Example Requests:**
 
 ```http
 GET /v1/tv/1396/seasons/1/episodes/1?platform=web
 GET /v1/tv/1396/seasons/5/episodes/14?platform=native
+GET /v1/tv/1396/seasons/1/episodes/1?platform=web&provider=alpha
 ```
 
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
@@ -364,7 +382,9 @@ If the `id` is valid the response will always be `200 OK`, since the backend sho
 
 Both the movie and TV episode endpoints share this response structure, which includes arrays of Source and Subtitle objects, as well as any diagnostics about data quality or scraping issues.
 
-However, the `platform` query parameter **will** change the structure of the Source Object (see 6.2 Source Objects).
+The response structure will stay the same regardless of the `provider` query parameter, as it only returns sources from the specified provider. If the `provider` parameter is not specified, sources from all providers will be returned. If the specified provider does not return any sources, the response shall throw a `NO_SOURCES_AVAILABLE` error (see [7.4.1 Media Exists, No Sources](#741-media-exists-no-sources)). If the `provider` parameter is specified but does not match any known provider, the response shall throw a `PROVIDER_NOT_FOUND` error (see [7.3 Standard Error Codes](#73-standard-error-codes)).
+
+However, the `platform` query parameter **will** change the structure of the [6.2 Source Objects](#62-source-object) and [6.3 Subtitle Objects](#63-subtitle-object) in the response, as described in their respective sections.
 
 **HTTP Status: 200 OK**
 
@@ -423,7 +443,7 @@ Default: `web`.
 }
 ```
 
-**?platform=native Example**
+**?platform=native&provider=provider_123 Example**
 
 ```json ?platform=native
 {
@@ -502,7 +522,7 @@ Default: `web`.
 }
 ```
 
-**?platform=native Example**
+**?platform=native&provider=provider_123 Example**
 
 ```json
 {
@@ -551,6 +571,9 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 **Description**: A non-response-fatal warning/error is an issue encountered during scraping that does not prevent the backend from returning a successful response. These warnings/errors provide additional context about potential data quality issues or provider-specific scraping failures (for example: `"Provider [name] failed to respond"` would be a non-response-fatal error).
 
+> [!NOTE]
+> If the `provider` parameter is specified in the request, but the backend fails to fetch sources from that specific provider, the response will not include a warning/error object in the `diagnostics` array, but will instead return a `NO_SOURCES_AVAILABLE` error response (see [7.4.1 Media Exists, No Sources](#741-media-exists-no-sources)).
+
 ```json
 {
     "code": "PROVIDER_ERROR",
@@ -571,10 +594,10 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 #### 6.4.1 Standard Warning/Error Codes
 
-| Error/Warning Code | Description                                                | Severity |
-| ------------------ | ---------------------------------------------------------- | -------- |
-| `PROVIDER_ERROR`   | An error occurred while fetching from the provider.        | error    |
-| `PARTIAL_SCRAPE`   | A provider did respond, but not to it's full extent.       | warning  |
+| Error/Warning Code | Description                                          | Severity |
+| ------------------ | ---------------------------------------------------- | -------- |
+| `PROVIDER_ERROR`   | An error occurred while fetching from the provider.  | error    |
+| `PARTIAL_SCRAPE`   | A provider did respond, but not to it's full extent. | warning  |
 
 ---
 
@@ -610,20 +633,21 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 ### 7.3 Standard Error Codes
 
-| Error Code               | HTTP Status | Description                             |
-| ------------------------ | ----------- | --------------------------------------- |
-| `INVALID_TMDB_ID`        | 400         | Invalid (i.e., fictional ID's) TMDB ID  |
-| `INVALID_PARAMETER`      | 400         | Invalid query/path parameter.           |
-| `MISSING_PARAMETER`      | 400         | Required parameter missing.             |
-| `INVALID_SEASON`         | 400         | Season number out of valid range.       |
-| `INVALID_EPISODE`        | 400         | Episode number invalid.                 |
-| `INVALID_RESPONSE_ID`    | 400         | Invalid responseId format.              |
-| `RESPONSE_ID_NOT_FOUND`  | 404         | responseId not found for refresh.       |
-| `NO_SOURCES_AVAILABLE`   | 404         | Media exists but no sources were found. |
-| `ENDPOINT_NOT_FOUND`     | 404         | Invalid endpoint path.                  |
-| `METHOD_NOT_ALLOWED`     | 405         | HTTP method not supported.              |
-| `INTERNAL_ERROR`         | 500         | Unexpected server error.                |
-| `UNSUPPORTED_MEDIA_TYPE` | 415         | Unsupported Content-Type in request.    |
+| Error Code               | HTTP Status | Description                              |
+| ------------------------ | ----------- | ---------------------------------------- |
+| `INVALID_TMDB_ID`        | 400         | Invalid (i.e., fictional ID's) TMDB ID   |
+| `INVALID_PARAMETER`      | 400         | Invalid query/path parameter.            |
+| `MISSING_PARAMETER`      | 400         | Required parameter missing.              |
+| `INVALID_SEASON`         | 400         | Season number out of valid range.        |
+| `INVALID_EPISODE`        | 400         | Episode number invalid.                  |
+| `INVALID_RESPONSE_ID`    | 400         | Invalid responseId format.               |
+| `PROVIDER_NOT_FOUND`     | 404         | No provider found with the specified ID. |
+| `RESPONSE_ID_NOT_FOUND`  | 404         | responseId not found for refresh.        |
+| `NO_SOURCES_AVAILABLE`   | 404         | Media exists but no sources were found.  |
+| `ENDPOINT_NOT_FOUND`     | 404         | Invalid endpoint path.                   |
+| `METHOD_NOT_ALLOWED`     | 405         | HTTP method not supported.               |
+| `INTERNAL_ERROR`         | 500         | Unexpected server error.                 |
+| `UNSUPPORTED_MEDIA_TYPE` | 415         | Unsupported Content-Type in request.     |
 
 > [!NOTE]
 > `INVALID_TMDB_ID` should be used, when the TMDB ID is valid in format but does not correspond to any media (e.g., `99999999`). For IDs that are not even valid in format (e.g., `abc123`), `INVALID_PARAMETER` should be used instead.
@@ -634,7 +658,7 @@ Backends must handle missing or incomplete subtitle data to the best of their ab
 
 **HTTP Status: 404 Not Found**
 
-When the TMDB ID is valid but no streaming sources are available:
+When the TMDB ID is valid but no streaming sources are available for that media, the backend MUST return a `404 Not Found` status with a `NO_SOURCES_AVAILABLE` error code. This indicates that while the media exists, the backend was unable to find any streamable sources for it (applies to a failure when fetching sources from a specific provider).
 
 ```json
 {
@@ -808,6 +832,8 @@ Accept: application/json
 ```
 
 Since the `platform` query parameter is omitted, the response uses the default `web` structure. All `url` fields are accessible without additional headers or CORS restrictions directly in browsers without requiring custom headers or proxy handling by the client.
+
+For examples when requesting a specific provider, see above in the [4.2 Movie Sources](#42-movie-sources) section.
 
 **Response: 200 OK**
 
@@ -1074,7 +1100,19 @@ The root endpoint provides general information about the OMSS backend implementa
     "media": {
         "movies": "*",
         "tv": "*"
-    }
+    },
+    "providers": [
+        {
+            "id": "provider_alpha",
+            "name": "Provider Alpha",
+            "capabilities": ["movies", "tv"]
+        },
+        {
+            "id": "provider_beta",
+            "name": "Provider Beta",
+            "capabilities": ["movies"]
+        }
+    ]
 }
 ```
 
@@ -1121,7 +1159,19 @@ This example shows a backend that exposes only a limited set of available movies
                 ]
             }
         ]
-    }
+    },
+    "providers": [
+        {
+            "id": "provider_alpha",
+            "name": "Provider Alpha",
+            "capabilities": ["movies", "tv"]
+        },
+        {
+            "id": "provider_beta",
+            "name": "Provider Beta",
+            "capabilities": ["movies"]
+        }
+    ]
 }
 ```
 

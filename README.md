@@ -47,10 +47,10 @@ Every streaming backend has custom API formats:
 ### Core Endpoints
 
 ```http
-GET /v1/movies/{id}?platform=native                     # Movie streaming sources
-GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web   # TV episode streaming sources
-POST /v1/refresh/{id}                                   # Invalidate cache for sources
-GET / or /v1                                            # Health check
+GET /v1/movies/{id}?platform=native&provider=<provider_id>    # Movie streaming sources
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web         # TV episode streaming sources
+POST /v1/refresh/{id}                                         # Invalidate cache for sources
+GET / or /v1                                                  # Health check
 ```
 
 ### Key Features
@@ -111,7 +111,7 @@ Host: api.example.com
 
 **Response:**
 
-```json
+````json
 {
     "id": "bdfa40a7-a468-461c-8563-7a0c165f252c",
     "expiresAt": "2026-01-11T20:56:00Z",
@@ -119,6 +119,7 @@ Host: api.example.com
         {
             "id": "cf6c3c2d-17be-4a5a-9488-bf12e70dca5a",
             "url": "https://api.example.com/playable/source/1/master.m3u8",
+            "streamable": true,
             "type": "hls",
             "quality": "4k",
             "audioTracks": ["Original", "English"],
@@ -130,6 +131,7 @@ Host: api.example.com
         {
             "id": "2b39e8b4-cf6c-4c89-88cf-6fbb55e0f4d3",
             "url": "https://api.example.com/playable/source/2/video.mp4",
+            "streamable": false,
             "type": "mp4",
             "quality": "FHD",
             "audioTracks": ["English"],
@@ -139,42 +141,27 @@ Host: api.example.com
             }
         }
     ],
-    "downloads": [
-        {
-            "id": "7e9bbdc5-9df7-4df2-91b1-d6fd7e912b45",
-            "url": "https://downloads.example.com/files/movie-155.mkv",
-            "type": "mkv",
-            "quality": "4k",
-            "audioTracks": ["Original"],
-            "provider": {
-                "id": "provider_archive",
-                "name": "Archive Provider"
-            }
-        }
-    ],
     "subtitles": [
         {
             "id": "ec9cf9b0-ff1f-4e69-80cb-ef28bb4f6db8",
             "url": "https://api.example.com/subtitles/en-155.vtt",
             "label": "English",
-            "format": "vtt"
-        },
-        {
-            "id": "9eac5bb7-3cf5-4475-a2d5-1a7eaf9f9e91",
-            "url": "https://api.example.com/subtitles/es-155.vtt",
-            "label": "Spanish",
-            "format": "vtt"
+            "format": "vtt",
+            "provider": {
+                "id": "provider_alpha",
+                "name": "Provider Alpha"
+            }
         }
     ],
     "diagnostics": [
         {
             "code": "PARTIAL_SCRAPE",
-            "message": "Some providers failed during scraping",
+            "message": "Server 1 of Alpha failed during scraping",
+            "source": "provider_alpha",
             "severity": "warning"
         }
     ]
-}
-```
+}```
 
 ---
 
@@ -192,10 +179,11 @@ Host: api.example.com
 
 ### How OMSS Decouples Frontends and Backends
 
-```
+````
+
 ┌─────────────────────────────────────────────────────────┐
-│                    OMSS v1.1 Standard                   │
-│              (Open Specification Document)              │
+│ OMSS v1.1 Standard │
+│ (Open Specification Document) │
 └─────────────────────────────────────────────────────────┘
 
           ┌───────────────────────────────┐
@@ -215,6 +203,7 @@ Host: api.example.com
     │Frontend 1│                    │Frontend 2│ <-- Frontends can now work with any OMSS backend
     │ (Web UI) │                    │(Mobile)  │     since they all follow the same spec!!🥳
     └──────────┘                    └──────────┘
+
 ```
 
 **Key Benefits:**
@@ -306,3 +295,4 @@ This is **not** a piracy tool or a scraper framework per se. OMSS is a **specifi
 Built with ❤️ by the OMSS Foundation
 
 </div>
+```
