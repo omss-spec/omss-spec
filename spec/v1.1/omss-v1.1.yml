@@ -453,7 +453,7 @@ paths:
                                 type: string
                                 example: 'Content-Type, Accept'
 
-    '/v1/refresh/{responseId}':
+    '/v1/refresh/{responseid}':
         post:
             tags: [Refresh]
             summary: Refresh a cached response by its ID

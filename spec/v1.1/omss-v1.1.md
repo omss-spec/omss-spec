@@ -3,11 +3,8 @@
 **Open Media Streaming Specification**
 
 Version: 1.1.0
-
 Status: Final
-
 Released: May 26th, 2026
-
 License: MIT
 
 ---
@@ -64,7 +61,7 @@ Modern streaming backends scrape data from various providers with inconsistent f
 
 **Out of Scope:**
 
-- Access control/authentication — implement that yourself. (you are no fun😔. Personal Note: I would not recommend hosting such a backend publicly anyway, since it brings risk and costs with it. For personal use you do not need these.)
+- Access control/authentication — implement that yourself. (Personal Note: I would not recommend hosting such a backend publicly anyway, since it brings risk and costs with it. For personal use you do not need these.)
 - Media metadata (ratings, descriptions, posters, etc.) — use the TMDB API directly.
 - Search functionality — use the TMDB API.
 - Provider-specific scraping logic — implement that yourself.
@@ -280,6 +277,7 @@ GET /v1/movies/{id}?platform=web&provider={provider_id}
 GET /v1/movies/155?platform=web
 GET /v1/movies/155?platform=native
 GET /v1/movies/155?platform=web&provider=alpha
+GET /v1/movies/155?provider=alpha
 ```
 
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
@@ -847,7 +845,7 @@ For examples when requesting a specific provider, see above in the [4.2 Movie So
             "url": "https://api.example.com/playable/source/1/master.m3u8",
             "streamable": true,
             "type": "hls",
-            "quality": "4k",
+            "quality": "4K",
             "audioTracks": ["Original", "English"],
             "provider": {
                 "id": "provider_alpha",
