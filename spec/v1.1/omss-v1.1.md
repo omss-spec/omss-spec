@@ -4,7 +4,7 @@
 
 Version: 1.1.0
 Status: Final
-Released: May 26th, 2026
+Released: June 9th, 2026
 License: MIT
 
 ---
