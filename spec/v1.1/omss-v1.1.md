@@ -3,8 +3,8 @@
 **Open Media Streaming Specification**
 
 Version: 1.1.0
-Status: Final
-Released: June 9th, 2026
+Status: Draft
+Released: N/A
 License: MIT
 
 ---
@@ -260,6 +260,7 @@ GET /v1
 GET /v1/movies/{id}?platform=web
 GET /v1/movies/{id}?platform=native
 GET /v1/movies/{id}?platform=web&provider={provider_id}
+GET /v1/movies/{id}?platform=web&provider={provider_id}&filter={filter_expression}
 ```
 
 **Path Parameters:**
@@ -270,6 +271,7 @@ GET /v1/movies/{id}?platform=web&provider={provider_id}
 
 - `platform` (string, optional): Target platform for source optimization. One of `web`, `native`. Default is `web`. **This will change the response structure!**
 - `provider` (string, optional): Specific provider to fetch sources from. MUST be a valid provider ID. The result will stay the same, but the backend shall only return sources from the specified provider.
+- `filter` (string, optional): filter expression(s) to apply on the returned sources. The syntax and semantics of the filter expressions are defined at [5.4 Filter Expression Syntax](#54-filter-expression-syntax). The filter parameter is only applicable to the sources array in the response, and does not affect the subtitles array.
 
 **Example Request:**
 
@@ -277,7 +279,8 @@ GET /v1/movies/{id}?platform=web&provider={provider_id}
 GET /v1/movies/155?platform=web
 GET /v1/movies/155?platform=native
 GET /v1/movies/155?platform=web&provider=alpha
-GET /v1/movies/155?provider=alpha
+GET /v1/movies/155?platform=web&provider=alpha&filter=quality==4K;streamable==true
+GET /v1/movies/155?filter=quality>=HD
 ```
 
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
@@ -290,6 +293,7 @@ GET /v1/movies/155?provider=alpha
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=native
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web&provider={provider_id}
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web&filter={filter_expression}
 ```
 
 **Path Parameters:**
@@ -302,6 +306,7 @@ GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web&provider={provider_id}
 
 - `platform` (string, optional): Target platform for source optimization. One of `web`, `native`. Default is `web`. **This will change the response structure!**
 - `provider` (string, optional): Specific provider to fetch sources from. MUST be a valid provider ID. The result will stay the same, but the backend shall only return sources from the specified provider.
+- `filter` (string, optional): filter expression(s) to apply on the returned sources. The syntax and semantics of the filter expressions are defined at [5.4 Filter Expression Syntax](#54-filter-expression-syntax). The filter parameter is only applicable to the sources array in the response, and does not affect the subtitles array.
 
 **Example Requests:**
 
@@ -309,6 +314,8 @@ GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web&provider={provider_id}
 GET /v1/tv/1396/seasons/1/episodes/1?platform=web
 GET /v1/tv/1396/seasons/5/episodes/14?platform=native
 GET /v1/tv/1396/seasons/1/episodes/1?platform=web&provider=alpha
+GET /v1/tv/1396/seasons/1/episodes/1?platform=web&filter=quality==4K;streamable==true
+GET /v1/tv/1396/seasons/1/episodes/1?filter=quality=in=(HD,FHD,4K)
 ```
 
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
@@ -371,6 +378,132 @@ If the `id` is valid the response will always be `200 OK`, since the backend sho
 - `id`: String (numeric characters ONLY, treated as a string).
 - `s`: Non-negative integer (0–∞ range).
 - `e`: Positive integer (≥ 1).
+
+### 5.4 Filter Expression Syntax
+
+The optional `filter` query parameter allows clients to filter the returned sources (not subtitles) based on their properties.
+
+Filtering is applied by the backend after source retrieval and before the response is returned to the client.
+
+#### 5.4.1 Syntax
+
+A filter expression consists of one or more conditions.
+
+```text
+condition[;condition...]
+```
+
+The semicolon (`;`) acts as a logical **AND** operator. All conditions MUST evaluate to `true` for an item to be included in the response.
+
+Examples:
+
+```text
+quality==4K # Return only 4K sources
+quality==4K;streamable==true # Return only 4K sources which are streamable
+provider.id==alpha;type==hls # Return only HLS sources from provider alpha
+```
+
+#### 5.4.2 Operators
+
+The following operators are supported:
+
+| Operator | Description                     |
+| -------- | ------------------------------- |
+| `==`     | Equal to                        |
+| `!=`     | Not equal to                    |
+| `=in=`   | Value is contained in a set     |
+| `=out=`  | Value is not contained in a set |
+
+The wildcard `*` MAY be used with any operator and/or search string to match any value. When used with ==, it matches any non-empty value. When used with !=, it matches no values. When used with =in= or =out=, it behaves as if all possible values were included in the set.
+
+Examples:
+
+```text
+quality==4K # Quality must be 4K
+quality!=SD # Quality must not be SD
+quality=in=(4K,FHD) # Quality must be either 4K or FHD
+audioTracks=in=(Eng*,Spa*) # Audio track must start with Eng or Spa
+provider.id=out=(alpha,beta) # Provider ID must not be alpha or beta
+```
+
+#### 5.4.3 Supported Fields
+
+Backends MUST support filtering on the following fields:
+
+| Field           | Type         |
+| --------------- | ------------ |
+| `quality`       | string       |
+| `type`          | string       |
+| `streamable`    | boolean      |
+| `provider.id`   | string       |
+| `provider.name` | string       |
+| `audioTracks`   | string array |
+| `format`        | string       |
+
+Backends MAY support additional fields. Clients MUST support the required fields (see above) and should ignore unsupported fields without throwing an error.
+
+#### 5.4.4 Array Matching
+
+For array fields such as `audioTracks`, a condition matches if at least one element in the array satisfies the condition.
+
+Examples:
+
+```text
+audioTracks==English
+audioTracks=in=(English,German)
+```
+
+The following source:
+
+```json
+{
+    "audioTracks": ["Original", "English", "Spanish"]
+}
+```
+
+matches both expressions above.
+
+#### 5.4.5 Examples
+
+Return only 4K sources:
+
+```http
+GET /v1/movies/155?filter=quality==4K
+```
+
+Return only streamable HLS sources:
+
+```http
+GET /v1/movies/155?filter=streamable==true;type==hls
+```
+
+Return only sources from a specific provider:
+
+```http
+GET /v1/movies/155?filter=provider.id==alpha
+```
+
+Return sources with English or German audio:
+
+```http
+GET /v1/movies/155?filter=audioTracks=in=(English,German)
+```
+
+#### 5.4.6 Invalid Filter Expressions
+
+If the filter expression contains invalid syntax, unsupported operators, malformed values, or unknown fields, the backend MUST return:
+
+```json
+{
+    "error": {
+        "code": "INVALID_PARAMETER",
+        "message": "Invalid filter expression"
+    },
+    "traceId": "..."
+}
+```
+
+with HTTP status `400 Bad Request`, before any other processing of the request is done.
 
 ---
 
