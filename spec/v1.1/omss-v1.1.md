@@ -3,8 +3,8 @@
 **Open Media Streaming Specification**
 
 Version: 1.1.0
-Status: Draft
-Released: N/A
+Status: Final
+Released: June 11th, 2026
 License: MIT
 
 ---
