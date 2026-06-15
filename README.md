@@ -49,6 +49,7 @@ Every streaming backend has custom API formats:
 ```http
 GET /v1/movies/{id}?platform=native&provider=<provider_id>    # Movie streaming sources
 GET /v1/tv/{id}/seasons/{s}/episodes/{e}?platform=web         # TV episode streaming sources
+GET /v1/tv/{id}/seasons/{s}/episodes/{e}?filter=quality==4K;  # Filtered TV episode streaming sources
 POST /v1/refresh/{id}                                         # Invalidate cache for sources
 GET / or /v1                                                  # Health check
 ```
@@ -111,7 +112,7 @@ Host: api.example.com
 
 **Response:**
 
-````json
+```json
 {
     "id": "bdfa40a7-a468-461c-8563-7a0c165f252c",
     "expiresAt": "2026-01-11T20:56:00Z",
@@ -161,7 +162,8 @@ Host: api.example.com
             "severity": "warning"
         }
     ]
-}```
+}
+```
 
 ---
 
@@ -179,11 +181,11 @@ Host: api.example.com
 
 ### How OMSS Decouples Frontends and Backends
 
-````
+```
 
 ┌─────────────────────────────────────────────────────────┐
-│ OMSS v1.1 Standard │
-│ (Open Specification Document) │
+│ OMSS v1.1 Standard                                      │
+│ (Open Specification Document)                           │
 └─────────────────────────────────────────────────────────┘
 
           ┌───────────────────────────────┐
@@ -224,8 +226,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 - 📝 Improve documentation and clarify ambiguities
 - 🐛 Report issues or unclear sections in the spec
 - 💡 Propose new features via GitHub Discussions
-- 🔧 Build OMSS-compliant backends or frontends
-- 🌍 Translate documentation to other languages
+- 🔧 Build OMSS-compliant backends or frontends and add them to the [registry!](REGISTRY.md)
 - ⭐ Star the repo and share with others
 
 ### Proposing Changes
@@ -295,4 +296,3 @@ This is **not** a piracy tool or a scraper framework per se. OMSS is a **specifi
 Built with ❤️ by the OMSS Foundation
 
 </div>
-```

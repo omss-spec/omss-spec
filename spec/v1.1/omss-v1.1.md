@@ -4,7 +4,7 @@
 
 Version: 1.1.0
 Status: Final
-Released: June 11th, 2026
+Released: June 15th, 2026
 License: MIT
 
 ---
@@ -607,9 +607,18 @@ Default: `web`.
     - `hls` — HTTP Live Streaming (M3U8).
     - `mp4` — MP4 file.
     - `mkv` — MKV file.
+    - `dash` — MPEG-DASH (`.mpd` files).
 
-- **`quality`** (string): Video quality. One of 8K, 4K, 2K, FHD, HD, SD, `Auto`. default/unknown --> `Auto`
-  Quality should be estimated based on available metadata such as bitrate, resolution, or inferred from the filename or manifest. If no quality information is available, use `Auto`. For example, 320p --> SD, 720p --> HD, 1080p --> FHD, 2160p --> 4K, 4320p --> 8K.
+- **`quality`** (string): Video quality. One of `8K`, `4K`, `QHD`, `FHD`, `HD`, `SD`, or `Auto`:
+    Quality should be inferred from the best available metadata, prioritizing resolution, then bitrate, filename, or manifest information. If the quality cannot be determined, use `Auto`.
+    Suggested resolution mapping:
+    * 4320p+ → `8K`
+    * 2160p–4319p → `4K`
+    * 1440p–2159p → `QHD`
+    * 1080p–1439p → `FHD`
+    * 720p–1079p → `HD`
+    * Below 720p → `SD`
+    * Unknown → `Auto`
 
 - **`audioTracks`** (array of strings): Human-readable language name. default/unknown --> `Original`
 

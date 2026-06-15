@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
     title: Open Media Streaming Specification (OMSS)
     description: |
@@ -51,936 +51,661 @@ tags:
       description: Refresh cached source responses
 
 paths:
-    '/':
-        get:
-            tags: [Home]
-            summary: Get OMSS backend root information
-            description: |
-                Returns general information about the OMSS backend implementation, available
-                endpoints, supported media, and providers.
-            operationId: getRoot
-            responses:
-                '200':
-                    description: Root information
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/HomeResponse'
-                            examples:
-                                root:
-                                    summary: Root endpoint example
-                                    value:
-                                        name: Example OMSS Implementation
-                                        version: '1.1.0'
-                                        status: operational
-                                        spec: omss
-                                        note: OMSS backend is running
-                                        endpoints:
-                                            movie: /v1/movies/{movieId}
-                                            tv: /v1/tv/{tvId}/seasons/{s}/episodes/{e}
-                                        media:
-                                            movies: '*'
-                                            tv: '*'
-                                        providers:
-                                            - id: provider_alpha
-                                              name: Provider Alpha
-                                              capabilities: ['movies', 'tv']
-                                            - id: provider_beta
-                                              name: Provider Beta
-                                              capabilities: ['movies']
-                '406':
-                    description: Not acceptable (only JSON is supported)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '415':
-                    description: Unsupported media type in request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '500':
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-        options:
-            tags: [Home]
-            summary: CORS preflight for root
-            responses:
-                '204':
-                    description: No content (CORS preflight)
-                    headers:
-                        Access-Control-Allow-Origin:
-                            description: Allowed origins
-                            schema:
-                                type: string
-                                example: '*'
-                        Access-Control-Allow-Methods:
-                            description: Allowed HTTP methods
-                            schema:
-                                type: string
-                                example: 'GET, OPTIONS'
-                        Access-Control-Allow-Headers:
-                            description: Allowed HTTP headers
-                            schema:
-                                type: string
-                                example: 'Content-Type, Accept'
+  /:
+    get:
+      summary: Root OMSS backend information
+      description: General information about the backend implementation and available media.
+      operationId: getRoot
+      tags: [Home]
+      responses:
+        '200':
+          description: Root backend information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeResponse'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
-    '/v1':
-        get:
-            tags: [Home]
-            summary: Get OMSS versioned root information
-            description: |
-                Returns versioned root information for OMSS v1, including endpoints,
-                media availability, and providers.
-            operationId: getV1Root
-            responses:
-                '200':
-                    description: Versioned root information
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/HomeResponse'
-                            examples:
-                                limited:
-                                    summary: Limited media backend example
-                                    value:
-                                        name: Limited Example Backend
-                                        version: '1.1.0'
-                                        status: operational
-                                        spec: omss
-                                        endpoints:
-                                            movie: /v1/movies/{movieId}
-                                            tv: /v1/tv/{tvId}/seasons/{s}/episodes/{e}
-                                        note: This backend exposes only selected media.
-                                        media:
-                                            movies: [123, 456]
-                                            tv:
-                                                - id: 1396
-                                                  seasons:
-                                                      - season: 1
-                                                        episodes: [1, 2, 3]
-                                                      - season: 2
-                                                        episodes: [1, 2, 3, 4, 5]
-                                        providers:
-                                            - id: provider_alpha
-                                              name: Provider Alpha
-                                              capabilities: ['movies', 'tv']
-                                            - id: provider_beta
-                                              name: Provider Beta
-                                              capabilities: ['movies']
-                '406':
-                    description: Not acceptable (only JSON is supported)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '415':
-                    description: Unsupported media type in request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '500':
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-        options:
-            tags: [Home]
-            summary: CORS preflight for v1 root
-            responses:
-                '204':
-                    description: No content (CORS preflight)
-                    headers:
-                        Access-Control-Allow-Origin:
-                            schema:
-                                type: string
-                                example: '*'
-                        Access-Control-Allow-Methods:
-                            schema:
-                                type: string
-                                example: 'GET, OPTIONS'
-                        Access-Control-Allow-Headers:
-                            schema:
-                                type: string
-                                example: 'Content-Type, Accept'
+  /v1:
+    get:
+      summary: Versioned root OMSS backend information
+      description: General information about the OMSS v1 backend implementation and available media.
+      operationId: getRootV1
+      tags: [Home]
+      responses:
+        '200':
+          description: Versioned root backend information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeResponse'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
-    '/v1/movies/{movieId}':
-        get:
-            tags: [Movies]
-            summary: Get movie streaming sources by TMDB ID
-            description: |
-                Retrieves streaming sources and subtitles for a movie identified by TMDB ID.
-                The response structure changes depending on the `platform` query parameter.
-            operationId: getMovieSources
-            parameters:
-                - $ref: '#/components/parameters/MovieIdPath'
-                - $ref: '#/components/parameters/PlatformQuery'
-                - $ref: '#/components/parameters/ProviderQuery'
-            responses:
-                '200':
-                    description: Streaming sources found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SourceResponse'
-                            examples:
-                                webDefault:
-                                    summary: Movie sources, web platform (default)
-                                    value:
-                                        id: bdfa40a7-a468-461c-8563-7a0c165f252c
-                                        expiresAt: '2026-01-11T20:56:00Z'
-                                        sources:
-                                            - id: cf6c3c2d-17be-4a5a-9488-bf12e70dca5a
-                                              url: https://api.example.com/playable/source/1/master.m3u8
-                                              streamable: true
-                                              type: hls
-                                              quality: 4K
-                                              audioTracks: ['Original', 'English']
-                                              provider:
-                                                  id: provider_alpha
-                                                  name: Provider Alpha
-                                            - id: 2b39e8b4-cf6c-4c89-88cf-6fbb55e0f4d3
-                                              url: https://api.example.com/playable/source/2/video.mp4
-                                              streamable: false
-                                              type: mp4
-                                              quality: FHD
-                                              audioTracks: ['English']
-                                              provider:
-                                                  id: provider_beta
-                                                  name: Provider Beta
-                                        subtitles:
-                                            - id: ec9cf9b0-ff1f-4e69-80cb-ef28bb4f6db8
-                                              url: https://api.example.com/subtitles/en-155.vtt
-                                              label: English
-                                              format: vtt
-                                              provider:
-                                                  id: provider_alpha
-                                                  name: Provider Alpha
-                                        diagnostics:
-                                            - code: PARTIAL_SCRAPE
-                                              message: Server 1 of Alpha failed during scraping
-                                              source: provider_alpha
-                                              severity: warning
-                '400':
-                    description: Invalid TMDB ID or query parameter
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            examples:
-                                invalidParameter:
-                                    summary: Invalid TMDB ID format
-                                    value:
-                                        error:
-                                            code: INVALID_PARAMETER
-                                            message: TMDB ID must contain numeric characters only
-                                            details:
-                                                parameter: id
-                                                value: not-a-number
-                                        traceId: fcd0ef6c-54b4-49e5-9f67-b5aefcb76f9e
-                '404':
-                    description: Media not found or no sources available
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            examples:
-                                tmdbNotFound:
-                                    summary: TMDB ID not found
-                                    value:
-                                        error:
-                                            code: INVALID_TMDB_ID
-                                            message: No media found with the provided TMDB ID
-                                        traceId: abc-123
-                                noSources:
-                                    summary: Media exists but no sources available
-                                    value:
-                                        error:
-                                            code: NO_SOURCES_AVAILABLE
-                                            message: 'No streaming sources found for TMDB ID: 999999'
-                                        traceId: f4f44c59-6e53-4f5d-a53d-c6d6cbeff5f
-                '406':
-                    description: Not acceptable (only JSON is supported)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            examples:
-                                notAcceptable:
-                                    summary: Unsupported Accept header
-                                    value:
-                                        error:
-                                            code: NOT_ACCEPTABLE
-                                            message: Only application/json responses are supported
-                                        traceId: 78fa61ab-5b89-4984-ae91-78382f9242d8
-                '415':
-                    description: Unsupported media type in request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '500':
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-        options:
-            tags: [Movies]
-            summary: CORS preflight for movie sources
-            responses:
-                '204':
-                    description: No content (CORS preflight)
-                    headers:
-                        Access-Control-Allow-Origin:
-                            schema:
-                                type: string
-                                example: '*'
-                        Access-Control-Allow-Methods:
-                            schema:
-                                type: string
-                                example: 'GET, OPTIONS'
-                        Access-Control-Allow-Headers:
-                            schema:
-                                type: string
-                                example: 'Content-Type, Accept'
+  /v1/movies/{id}:
+    get:
+      summary: Movie sources
+      description: Retrieve movie streaming sources by TMDB movie ID.
+      operationId: getMovieSources
+      tags: [Movies]
+      parameters:
+        - $ref: '#/components/parameters/MovieId'
+        - $ref: '#/components/parameters/Platform'
+        - $ref: '#/components/parameters/Provider'
+        - $ref: '#/components/parameters/Filter'
+      responses:
+        '200':
+          description: Movie sources and subtitles successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
-    '/v1/tv/{tvId}/seasons/{s}/episodes/{e}':
-        get:
-            tags: [TV]
-            summary: Get TV episode streaming sources
-            description: |
-                Retrieves streaming sources and subtitles for a TV episode identified by
-                TMDB series ID, season number, and episode number. The response structure
-                changes depending on the `platform` query parameter.
-            operationId: getTvEpisodeSources
-            parameters:
-                - $ref: '#/components/parameters/TvIdPath'
-                - $ref: '#/components/parameters/SeasonPath'
-                - $ref: '#/components/parameters/EpisodePath'
-                - $ref: '#/components/parameters/PlatformQuery'
-                - $ref: '#/components/parameters/ProviderQuery'
-            responses:
-                '200':
-                    description: Streaming sources found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SourceResponse'
-                            examples:
-                                native:
-                                    summary: TV episode sources, native platform
-                                    value:
-                                        id: ad2e6d83-ef14-42de-9f3d-88d4d0c60b6f
-                                        expiresAt: '2026-01-11T21:15:00Z'
-                                        sources:
-                                            - id: f54cdb9f-f7dd-4f53-8456-d31a94f27ef1
-                                              url: https://upstream.provider.com/stream/master.m3u8
-                                              headers:
-                                                  Referer: https://upstream.provider.com/watch/1396-1-1
-                                                  User-Agent: ExampleNativePlayer/1.0
-                                              streamable: true
-                                              type: hls
-                                              quality: HD
-                                              audioTracks: ['Original', 'English', 'German']
-                                              provider:
-                                                  id: provider_streamhub
-                                                  name: StreamHub
-                                        subtitles:
-                                            - id: ee7d8e7f-8f6f-4d66-8c71-9d5f50a2df17
-                                              url: https://subs.provider.com/1396-s1-e1-en.vtt
-                                              headers:
-                                                  Referer: https://subs.provider.com
-                                              label: English
-                                              format: vtt
-                                              provider:
-                                                  id: provider_streamhub
-                                                  name: StreamHub
-                                        diagnostics: []
-                '400':
-                    description: Invalid TMDB ID, season, episode, or query parameter
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '404':
-                    description: Media not found or no sources available
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '406':
-                    description: Not acceptable (only JSON is supported)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '415':
-                    description: Unsupported media type in request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '500':
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-        options:
-            tags: [TV]
-            summary: CORS preflight for TV episode sources
-            responses:
-                '204':
-                    description: No content (CORS preflight)
-                    headers:
-                        Access-Control-Allow-Origin:
-                            schema:
-                                type: string
-                                example: '*'
-                        Access-Control-Allow-Methods:
-                            schema:
-                                type: string
-                                example: 'GET, OPTIONS'
-                        Access-Control-Allow-Headers:
-                            schema:
-                                type: string
-                                example: 'Content-Type, Accept'
+  /v1/tv/{id}/seasons/{s}/episodes/{e}:
+    get:
+      summary: TV episode sources
+      description: Retrieve TV episode streaming sources by TMDB series ID, season, and episode.
+      operationId: getTvEpisodeSources
+      tags: [TV]
+      parameters:
+        - $ref: '#/components/parameters/SeriesId'
+        - $ref: '#/components/parameters/SeasonNumber'
+        - $ref: '#/components/parameters/EpisodeNumber'
+        - $ref: '#/components/parameters/Platform'
+        - $ref: '#/components/parameters/Provider'
+        - $ref: '#/components/parameters/Filter'
+      responses:
+        '200':
+          description: TV episode sources and subtitles successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
-    '/v1/refresh/{responseid}':
-        post:
-            tags: [Refresh]
-            summary: Refresh a cached response by its ID
-            description: |
-                Invalidates the cached response for the given response ID. If the ID is valid,
-                the cache entry is removed and the ID is immediately invalidated. The next
-                request for the corresponding media will trigger a fresh scrape.
-            operationId: refreshResponse
-            parameters:
-                - $ref: '#/components/parameters/ResponseIdPath'
-            responses:
-                '200':
-                    description: Refresh request accepted and processed
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RefreshResponse'
-                            examples:
-                                success:
-                                    summary: Successful refresh
-                                    value:
-                                        status: OK
-                '400':
-                    description: Invalid response ID format
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '404':
-                    description: Response ID not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            examples:
-                                notFound:
-                                    summary: Unknown response ID
-                                    value:
-                                        error:
-                                            code: RESPONSE_ID_NOT_FOUND
-                                            message: No cached response found for the provided ID
-                                        traceId: 1f5dff55-b0ec-4a74-87ec-b5b6e8bc52a7
-                '406':
-                    description: Not acceptable (only JSON is supported)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '415':
-                    description: Unsupported media type in request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '500':
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-        options:
-            tags: [Refresh]
-            summary: CORS preflight for refresh endpoint
-            responses:
-                '204':
-                    description: No content (CORS preflight)
-                    headers:
-                        Access-Control-Allow-Origin:
-                            schema:
-                                type: string
-                                example: '*'
-                        Access-Control-Allow-Methods:
-                            schema:
-                                type: string
-                                example: 'POST, OPTIONS'
-                        Access-Control-Allow-Headers:
-                            schema:
-                                type: string
-                                example: 'Content-Type, Accept'
+  /v1/refresh/{id}:
+    post:
+      summary: Refresh cached response
+      description: >
+        Unified endpoint to refresh a response by its identifier, invalidating
+        the cached entry so that the next media request triggers a fresh scrape.
+      operationId: refreshResponse
+      tags: [Refresh]
+      parameters:
+        - $ref: '#/components/parameters/ResponseId'
+      responses:
+        '200':
+          description: Refresh request accepted and cache invalidated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
 components:
-    parameters:
-        MovieIdPath:
-            name: movieId
-            in: path
-            required: true
-            description: TMDB movie ID (numeric characters only, treated as a string).
-            schema:
-                type: string
-                pattern: '^[0-9]+$'
-                maxLength: 20
-        TvIdPath:
-            name: tvId
-            in: path
-            required: true
-            description: TMDB series ID (numeric characters only, treated as a string).
-            schema:
-                type: string
-                pattern: '^[0-9]+$'
-                maxLength: 20
-        SeasonPath:
-            name: s
-            in: path
-            required: true
-            description: Season number (integer, 0–99999).
-            schema:
+  parameters:
+    MovieId:
+      name: id
+      in: path
+      required: true
+      description: TMDB movie ID, numeric characters only, treated as a string.
+      schema:
+        type: string
+        pattern: '^[0-9]+$'
+        maxLength: 20
+
+    SeriesId:
+      name: id
+      in: path
+      required: true
+      description: TMDB series ID, numeric characters only, treated as a string.
+      schema:
+        type: string
+        pattern: '^[0-9]+$'
+        maxLength: 20
+
+    SeasonNumber:
+      name: s
+      in: path
+      required: true
+      description: Season number (non-negative integer).
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 99
+
+    EpisodeNumber:
+      name: e
+      in: path
+      required: true
+      description: Episode number (positive integer).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 9999
+
+    ResponseId:
+      name: id
+      in: path
+      required: true
+      description: >
+        Response identifier used by the refresh endpoint. Alphanumeric with
+        hyphens/underscores, max 128 characters.
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9_-]{1,128}$'
+        maxLength: 128
+
+    Platform:
+      name: platform
+      in: query
+      required: false
+      description: >
+        Target platform for source optimization. For "web" the url fields must
+        be directly usable in browsers without additional headers or CORS
+        handling. For "native" the url fields are upstream URLs and headers are
+        returned to be used by native players. Default is "web".
+      schema:
+        type: string
+        enum:
+          - web
+          - native
+
+    Provider:
+      name: provider
+      in: query
+      required: false
+      description: >
+        Specific provider ID to fetch sources from. The response structure
+        remains the same but only sources from this provider are returned. If
+        the provider is unknown, a PROVIDER_NOT_FOUND error is returned.
+      schema:
+        type: string
+
+    Filter:
+      name: filter
+      in: query
+      required: false
+      description: >
+        Filter expression applied to the sources array (not subtitles) after
+        retrieval and before the response is returned. Syntax:
+        "condition[;condition...]" where ";" acts as logical AND. Supported
+        operators: "==", "!=", "=in=", "=out=". The wildcard "*" MAY be used in
+        values. Backends MUST support filtering on quality, type, streamable,
+        provider.id, provider.name, audioTracks, and format.
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: >
+        Bad request due to invalid or missing parameters, or invalid TMDB ID
+        format.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: >
+        Resource not found, including media that does not exist for the given
+        TMDB ID or media that exists but has no available sources.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotAcceptable:
+      description: >
+        The requested Accept header is not supported. OMSS supports JSON
+        responses only.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    UnsupportedMediaType:
+      description: Unsupported Content-Type in the request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    HomeResponse:
+      type: object
+      description: Root information about the OMSS backend and available media.
+      required:
+        - name
+        - version
+        - status
+        - endpoints
+        - spec
+        - media
+        - providers
+      properties:
+        name:
+          type: string
+          description: Implementation name.
+        version:
+          type: string
+          description: Semantic version of the OMSS implementation.
+        status:
+          type: string
+          description: API status.
+          enum:
+            - operational
+            - degraded
+            - down
+        spec:
+          type: string
+          description: Specification identifier; MUST be "omss" for OMSS implementations.
+          enum:
+            - omss
+        note:
+          type: string
+          description: Optional message, description, or disclaimer provided by the backend.
+        endpoints:
+          type: object
+          description: Functions mapped to paths.
+          required:
+            - movie
+            - tv
+          properties:
+            movie:
+              type: string
+              description: >
+                Path to the movie endpoint. MUST contain the "{id}" placeholder
+                where the frontend will insert the TMDB movie ID.
+            tv:
+              type: string
+              description: >
+                Path to the TV show endpoint. MUST contain the "{id}", "{s}",
+                and "{e}" placeholders where the frontend will insert the TMDB
+                series ID, season, and episode respectively.
+        media:
+          $ref: '#/components/schemas/MediaOverview'
+        providers:
+          type: array
+          description: List of providers this backend exposes.
+          items:
+            $ref: '#/components/schemas/Provider'
+
+    MediaOverview:
+      type: object
+      description: Overview of media availability.
+      required:
+        - movies
+        - tv
+      properties:
+        movies:
+          description: >
+            List of TMDB movie IDs available in this backend, or "*" if all
+            movies are supported.
+          oneOf:
+            - type: array
+              items:
                 type: integer
-                minimum: 0
-                maximum: 99999
-        EpisodePath:
-            name: e
-            in: path
-            required: true
-            description: Episode number (integer, 1–9,99999).
-            schema:
+            - type: string
+              enum:
+                - '*'
+        tv:
+          description: >
+            List of TMDB TV series IDs with available seasons and episodes, or
+            "*" if all TV series are supported.
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/TvAvailability'
+            - type: string
+              enum:
+                - '*'
+
+    TvAvailability:
+      type: object
+      description: Availability information for a single TV series.
+      required:
+        - id
+        - seasons
+      properties:
+        id:
+          type: integer
+          description: TMDB series ID.
+        seasons:
+          type: array
+          description: List of seasons with available episodes.
+          items:
+            type: object
+            required:
+              - season
+              - episodes
+            properties:
+              season:
                 type: integer
-                minimum: 1
-                maximum: 99999
-        ResponseIdPath:
-            name: responseid
-            in: path
-            required: true
-            description: Response identifier to refresh (alphanumeric, hyphens and underscores, max 128 chars).
-            schema:
-                type: string
-                pattern: '^[A-Za-z0-9_-]{1,128}$'
-        PlatformQuery:
-            name: platform
-            in: query
-            required: false
-            description: |
-                Target platform for source optimization. For `web`, URLs must be directly
-                playable in browsers without extra headers or CORS workarounds. For
-                `native`, URLs point to upstream providers and may require custom headers.
-            schema:
-                type: string
-                enum: [web, native]
-                default: web
-        ProviderQuery:
-            name: provider
-            in: query
-            required: false
-            description: |
-                Specific provider ID to fetch sources from. Must be a valid provider ID.
-                If set but no sources are returned, `NO_SOURCES_AVAILABLE` MUST be returned.
-                If the ID does not match any known provider, `PROVIDER_NOT_FOUND` MUST be returned.
-            schema:
-                type: string
+                description: Season number.
+              episodes:
+                type: array
+                description: List of available episode numbers in this season.
+                items:
+                  type: integer
 
-    schemas:
-        HomeResponse:
-            type: object
-            required:
-                - name
-                - version
-                - status
-                - endpoints
-                - spec
-                - media
-                - providers
-            properties:
-                name:
-                    type: string
-                    description: Human-readable implementation name.
-                version:
-                    type: string
-                    description: Semantic version of the OMSS implementation (e.g. "1.1.0").
-                status:
-                    type: string
-                    description: Current API status.
-                    enum: [operational, degraded, down]
-                spec:
-                    type: string
-                    description: Specification identifier. MUST be "omss" for OMSS implementations.
-                    enum: [omss]
-                note:
-                    type: string
-                    description: Optional custom message, disclaimer, or description.
-                endpoints:
-                    type: object
-                    description: Mapping of logical functions to HTTP paths.
-                    required:
-                        - movie
-                        - tv
-                    properties:
-                        movie:
-                            type: string
-                            description: Path template to the movie endpoint; MUST contain `{id}`.
-                            example: /v1/movies/{id}
-                        tv:
-                            type: string
-                            description: |
-                                Path template to the TV show endpoint; MUST contain `{id}`, `{s}`, and `{e}`.
-                            example: /v1/tv/{id}/seasons/{s}/episodes/{e}
-                media:
-                    $ref: '#/components/schemas/MediaAvailability'
-                providers:
-                    type: array
-                    description: List of upstream providers available via this backend.
-                    items:
-                        $ref: '#/components/schemas/Provider'
+    Provider:
+      type: object
+      description: Provider metadata including capabilities.
+      required:
+        - id
+        - name
+        - capabilities
+      properties:
+        id:
+          type: string
+          description: Unique, URL-safe provider identifier.
+        name:
+          type: string
+          description: Human-readable provider name.
+        capabilities:
+          type: array
+          description: >
+            List of media types the provider supports. Any combination of
+            "movies", "tv", and/or "subtitles".
+          items:
+            type: string
+            enum:
+              - movies
+              - tv
+              - subtitles
 
-        MediaAvailability:
-            type: object
-            description: Declaration of which movies and TV series are available in the backend.
-            required:
-                - movies
-                - tv
-            properties:
-                movies:
-                    description: |
-                        List of TMDB movie IDs available, or "*" if the backend supports all movies.
-                    oneOf:
-                        - type: string
-                          enum: ['*']
-                        - type: array
-                          items:
-                              type: integer
-                tv:
-                    description: |
-                        List of TMDB TV series with available seasons and episodes, or "*" if the
-                        backend supports all series. "*" may also be used within a series or
-                        season to indicate full availability.
-                    oneOf:
-                        - type: string
-                          enum: ['*']
-                        - type: array
-                          items:
-                              $ref: '#/components/schemas/TvAvailability'
+    ProviderRef:
+      type: object
+      description: Provider reference information included in sources and subtitles.
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique provider identifier.
+        name:
+          type: string
+          description: Human-readable provider name.
 
-        TvAvailability:
-            type: object
-            required:
-                - id
-                - seasons
-            properties:
-                id:
-                    type: integer
-                    description: TMDB series ID.
-                seasons:
-                    type: array
-                    description: List of seasons with available episodes.
-                    items:
-                        $ref: '#/components/schemas/TvSeasonAvailability'
+    SourcesResponse:
+      type: object
+      description: >
+        Success response for movie and TV episode endpoints, containing sources,
+        subtitles, and diagnostics.
+      required:
+        - id
+        - sources
+        - subtitles
+        - diagnostics
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique response identifier (e.g. UUID v4).
+        expiresAt:
+          type: string
+          format: date-time
+          description: >
+            Optional ISO 8601 timestamp when sources expire (for signed or
+            temporary URLs).
+        sources:
+          type: array
+          description: Array of streaming source objects. Must contain at least one element if any sources are available.
+          items:
+            $ref: '#/components/schemas/Source'
+        subtitles:
+          type: array
+          description: Array of subtitle objects. May be empty.
+          items:
+            $ref: '#/components/schemas/Subtitle'
+        diagnostics:
+          type: array
+          description: >
+            Non-fatal warnings or errors about data quality, inference, or
+            provider issues. May be empty.
+          items:
+            $ref: '#/components/schemas/Diagnostic'
 
-        TvSeasonAvailability:
-            type: object
-            required:
-                - season
-                - episodes
-            properties:
-                season:
-                    type: integer
-                    description: Season number.
-                episodes:
-                    description: |
-                        List of episode numbers available in this season, or "*" if all episodes
-                        in this season are available.
-                    oneOf:
-                        - type: string
-                          enum: ['*']
-                        - type: array
-                          items:
-                              type: integer
+    Source:
+      type: object
+      description: Streaming source with quality and technical metadata.
+      required:
+        - id
+        - url
+        - streamable
+        - type
+        - quality
+        - audioTracks
+        - provider
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique source identifier (e.g. UUID v4).
+        url:
+          type: string
+          format: uri
+          description: >
+            For platform=web: URL directly usable in HTML5 video players without
+            CORS issues. For platform=native: upstream URL from the provider,
+            possibly requiring CORS handling or custom headers (provided in
+            headers).
+        headers:
+          type: object
+          description: >
+            Present only for platform=native. Key-value pairs of HTTP and
+            non-standard HTTP headers to include when accessing the url.
+          additionalProperties:
+            type: string
+        streamable:
+          type: boolean
+          description: >
+            Indicates if the source is streamable (true) or a direct download
+            link (false). Download links MUST NOT be used as streaming sources.
+        type:
+          type: string
+          description: Source type.
+          enum:
+            - hls   # HTTP Live Streaming (M3U8)
+            - mp4   # MP4 file
+            - mkv   # MKV file
+            - dash  # MPEG-DASH (.mpd)
+        quality:
+          type: string
+          description: >
+            Video quality. Should be inferred from resolution, bitrate, filename,
+            or manifest information; use "Auto" when unknown.
+          enum:
+            - '8K'
+            - '4K'
+            - QHD
+            - FHD
+            - HD
+            - SD
+            - Auto
+        audioTracks:
+          type: array
+          description: >
+            Human-readable language names for available audio tracks. Use
+            "Original" when the language cannot be determined.
+          items:
+            type: string
+        provider:
+          $ref: '#/components/schemas/ProviderRef'
 
-        Provider:
-            type: object
-            description: Upstream provider exposed by the backend.
-            required:
-                - id
-                - name
-                - capabilities
-            properties:
-                id:
-                    type: string
-                    description: Unique, URL-safe provider identifier.
-                name:
-                    type: string
-                    description: Human-readable provider name.
-                capabilities:
-                    type: array
-                    description: Media types the provider supports.
-                    items:
-                        type: string
-                        enum: [movies, tv, subtitles]
+    Subtitle:
+      type: object
+      description: Subtitle or caption track.
+      required:
+        - id
+        - url
+        - label
+        - format
+        - provider
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique subtitle identifier (e.g. UUID v4).
+        url:
+          type: string
+          format: uri
+          description: >
+            For platform=web: direct subtitle URL usable in HTML5 track elements
+            without CORS issues. For platform=native: upstream subtitle URL from
+            the provider, possibly requiring CORS handling or custom headers
+            (provided in headers).
+        headers:
+          type: object
+          description: >
+            Present only for platform=native. Key-value pairs of HTTP and
+            non-standard HTTP headers to include when accessing the url.
+          additionalProperties:
+            type: string
+        label:
+          type: string
+          description: >
+            Human-readable language name for the subtitle track. Use "Unknown"
+            when the language cannot be determined.
+        format:
+          type: string
+          description: Subtitle format.
+          enum:
+            - vtt  # WebVTT (preferred for web; default)
+            - srt  # SubRip
+        provider:
+          $ref: '#/components/schemas/ProviderRef'
 
-        ProviderRef:
-            type: object
-            description: Reference to a provider within source/subtitle objects.
-            required:
-                - id
-                - name
-            properties:
-                id:
-                    type: string
-                    description: Provider identifier.
-                name:
-                    type: string
-                    description: Provider display name.
+    Diagnostic:
+      type: object
+      description: Non-response-fatal warning or error encountered during scraping.
+      required:
+        - code
+        - message
+        - source
+        - severity
+      properties:
+        code:
+          type: string
+          description: Machine-readable warning/error code.
+          enum:
+            - PROVIDER_ERROR
+            - PARTIAL_SCRAPE
+        message:
+          type: string
+          description: Human-readable description of the issue.
+        source:
+          type: string
+          description: >
+            Identifier of the source of the issue (e.g. provider ID). Empty
+            string means the warning applies to the entire response.
+        severity:
+          type: string
+          description: Warning/error severity.
+          enum:
+            - warning
+            - error
 
-        SourceResponse:
-            type: object
-            description: |
-                Unified response for movie and TV episode source requests. Contains
-                streaming sources, subtitles, and non-fatal diagnostics.
-            required:
-                - id
-                - sources
-                - subtitles
-                - diagnostics
-            properties:
-                id:
-                    type: string
-                    format: uuid
-                    description: Unique response identifier (e.g. UUID v4).
-                expiresAt:
-                    type: string
-                    format: date-time
-                    description: |
-                        Optional ISO 8601 timestamp when sources expire (e.g. for signed/temporary URLs).
-                sources:
-                    type: array
-                    description: |
-                        Array of streaming sources. MUST contain at least one element if
-                        the response is successful; if no sources are available, a
-                        `NO_SOURCES_AVAILABLE` error MUST be returned instead.
-                    items:
-                        $ref: '#/components/schemas/Source'
-                subtitles:
-                    type: array
-                    description: Array of subtitle objects. May be empty.
-                    items:
-                        $ref: '#/components/schemas/Subtitle'
-                diagnostics:
-                    type: array
-                    description: |
-                        Non-response-fatal warnings and errors about data quality, scraping,
-                        or provider issues. May be empty.
-                    items:
-                        $ref: '#/components/schemas/Diagnostic'
+    RefreshResponse:
+      type: object
+      description: Response object for the refresh endpoint.
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Refresh status string; MUST be "OK" on success.
+          enum:
+            - OK
 
-        Source:
-            type: object
-            description: |
-                Represents a streaming source with quality and technical metadata.
-                For `platform=web`, `url` MUST be directly playable in HTML5 players
-                without extra headers or CORS handling. For `platform=native`, `url`
-                MUST be the upstream provider URL and `headers` MUST include any
-                required HTTP or non-standard headers.
-            required:
-                - id
-                - url
-                - streamable
-                - type
-                - quality
-                - audioTracks
-                - provider
-            properties:
-                id:
-                    type: string
-                    format: uuid
-                    description: Unique source identifier (e.g. UUID v4).
-                url:
-                    type: string
-                    format: uri
-                    description: |
-                        For web platform: URL directly usable in HTML5 players without CORS
-                        or extra headers. For native platform: upstream provider URL that
-                        may require custom headers and CORS handling.
-                headers:
-                    type: object
-                    description: |
-                        Key-value pairs of HTTP (and non-standard) headers that MUST be sent
-                        when accessing `url` for native platform responses. MUST NOT be
-                        present for web platform responses.
-                    additionalProperties:
-                        type: string
-                streamable:
-                    type: boolean
-                    description: |
-                        Indicates if the source is streamable. If false, clients MUST treat
-                        the URL as a direct download link and MUST NOT attempt to stream it.
-                type:
-                    type: string
-                    description: Source type.
-                    enum:
-                        - hls # HTTP Live Streaming (M3U8)
-                        - mp4 # MP4 file
-                        - mkv # MKV file
-                quality:
-                    type: string
-                    description: |
-                        Video quality. Should be inferred from resolution, bitrate, or file
-                        names when possible. If unknown, use `Auto`.
-                    enum: [8K, 4K, 2K, FHD, HD, SD, Auto]
-                audioTracks:
-                    type: array
-                    description: |
-                        Human-readable language names for available audio tracks. If
-                        language cannot be determined, use "Original".
-                    items:
-                        type: string
-                provider:
-                    $ref: '#/components/schemas/ProviderRef'
+    ErrorResponse:
+      type: object
+      description: Standard error response format for all non-2xx responses.
+      required:
+        - error
+        - traceId
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+        traceId:
+          type: string
+          description: Unique identifier for error tracking and debugging.
 
-        Subtitle:
-            type: object
-            description: |
-                Represents a subtitle or caption track. For `platform=web`, `url` MUST
-                be directly usable in HTML5 `<track>` elements without CORS issues.
-                For `platform=native`, `url` MUST be the upstream provider URL and
-                `headers` MUST include any required headers.
-            required:
-                - id
-                - url
-                - label
-                - format
-                - provider
-            properties:
-                id:
-                    type: string
-                    format: uuid
-                    description: Unique subtitle identifier (e.g. UUID v4).
-                url:
-                    type: string
-                    format: uri
-                    description: |
-                        For web platform: URL directly usable for subtitle loading. For
-                        native platform: upstream provider URL that may require headers.
-                headers:
-                    type: object
-                    description: |
-                        Key-value pairs of headers that MUST be sent when accessing `url`
-                        for native platform responses. MUST NOT be present for web responses.
-                    additionalProperties:
-                        type: string
-                label:
-                    type: string
-                    description: Human-readable language label (e.g. "English"). If unknown, use "Unknown".
-                format:
-                    type: string
-                    description: Subtitle format.
-                    enum:
-                        - vtt # WebVTT (preferred for web; default)
-                        - srt # SubRip
-                provider:
-                    $ref: '#/components/schemas/ProviderRef'
-
-        Diagnostic:
-            type: object
-            description: |
-                Warning or error object included in a successful response to describe
-                non-response-fatal issues encountered during scraping or aggregation.
-                If `source` is an empty string, the diagnostic applies to the entire response.
-            required:
-                - code
-                - message
-                - severity
-            properties:
-                code:
-                    type: string
-                    description: Machine-readable warning/error code.
-                    enum:
-                        - PROVIDER_ERROR
-                        - PARTIAL_SCRAPE
-                message:
-                    type: string
-                    description: Human-readable description of the issue.
-                source:
-                    type: string
-                    description: |
-                        Identifier for the source of the issue (e.g. provider ID). If empty,
-                        the diagnostic applies to the entire response.
-                severity:
-                    type: string
-                    description: Severity of the issue.
-                    enum:
-                        - warning
-                        - error
-
-        ErrorResponse:
-            type: object
-            description: Standard error response envelope for all non-2xx responses.
-            required:
-                - error
-                - traceId
-            properties:
-                error:
-                    type: object
-                    required:
-                        - code
-                        - message
-                    properties:
-                        code:
-                            type: string
-                            description: Machine-readable error code.
-                            enum:
-                                - INVALID_TMDB_ID
-                                - INVALID_PARAMETER
-                                - MISSING_PARAMETER
-                                - INVALID_SEASON
-                                - INVALID_EPISODE
-                                - INVALID_RESPONSE_ID
-                                - PROVIDER_NOT_FOUND
-                                - RESPONSE_ID_NOT_FOUND
-                                - NO_SOURCES_AVAILABLE
-                                - ENDPOINT_NOT_FOUND
-                                - METHOD_NOT_ALLOWED
-                                - INTERNAL_ERROR
-                                - UNSUPPORTED_MEDIA_TYPE
-                                - NOT_ACCEPTABLE
-                        message:
-                            type: string
-                            description: Human-readable error description.
-                        details:
-                            description: Additional context about the error. Frontends SHOULD NOT display this.
-                traceId:
-                    type: string
-                    description: Unique identifier for error tracking and debugging.
-
-        RefreshResponse:
-            type: object
-            description: Response returned by the refresh endpoint on success.
-            required:
-                - status
-            properties:
-                status:
-                    type: string
-                    description: Status of the refresh operation. MUST be "OK" on success.
-                    enum: [OK]
+    ErrorObject:
+      type: object
+      description: Error details container.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code.
+          enum:
+            - INVALID_TMDB_ID
+            - INVALID_PARAMETER
+            - MISSING_PARAMETER
+            - INVALID_SEASON
+            - INVALID_EPISODE
+            - INVALID_RESPONSE_ID
+            - PROVIDER_NOT_FOUND
+            - RESPONSE_ID_NOT_FOUND
+            - NO_SOURCES_AVAILABLE
+            - ENDPOINT_NOT_FOUND
+            - METHOD_NOT_ALLOWED
+            - INTERNAL_ERROR
+            - UNSUPPORTED_MEDIA_TYPE
+            - NOT_ACCEPTABLE
+        message:
+          type: string
+          description: Human-readable error description.
+        details:
+          description: >
+            Optional additional context about the error. Frontends should not
+            display this field directly.
