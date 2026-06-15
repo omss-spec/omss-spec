@@ -86,10 +86,10 @@ section.
 - **Initial Response**: Within 72 hours (acknowledgment of report)
 - **Assessment**: Within 7 days (initial evaluation and severity assessment)
 - **Resolution Timeline**:
-  - Critical: Within 14 days
-  - High: Within 30 days
-  - Medium: Within 60 days
-  - Low: Next minor release
+    - Critical: Within 14 days
+    - High: Within 30 days
+    - Medium: Within 60 days
+    - Low: Next minor release
 
 We will keep you informed of progress throughout the resolution process.
 
@@ -99,7 +99,7 @@ We will keep you informed of progress throughout the resolution process.
 
 | Version | Supported          | Status      |
 | ------- | ------------------ | ----------- |
-| 1.0.x   | :white_check_mark: | Active      |
+| 1.x.x   | :white_check_mark: | Active      |
 | < 1.0   | :x:                | Development |
 
 We only accept security reports for released versions of the specification.
@@ -110,15 +110,14 @@ We only accept security reports for released versions of the specification.
 
 - We follow **coordinated disclosure** practices
 - Security vulnerabilities will be disclosed publicly only after:
-
-  1. A fix has been released (or workaround documented)
-  2. Affected implementations have had reasonable time to update
-  3. At least 90 days have passed since the fix was released
+    1. A fix has been released (or workaround documented)
+    2. Affected implementations have had reasonable time to update
+    3. At least 90 days have passed since the fix was released
 
 - Reporters will be credited in:
-  - Security advisories
-  - CHANGELOG.md
-  - Release notes
+    - Security advisories
+    - CHANGELOG.md
+    - Release notes
 
 ---
 

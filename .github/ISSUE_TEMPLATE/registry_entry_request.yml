@@ -1,0 +1,109 @@
+name: Registry Entry Request
+description: Add, update, or remove an implementation entry in REGISTRY.md
+title: '[Registry]: '
+labels: ['registry', 'needs-triage']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Use this template to request changes to the OMSS implementation registry.
+
+              The registry is maintained in REGISTRY.md in this repository. Please provide clear,
+              accurate information so the entry can be reviewed and updated.
+
+    - type: dropdown
+      id: request-type
+      attributes:
+          label: Request Type
+          description: What kind of change are you requesting?
+          options:
+              - New entry
+              - Update existing entry
+              - Remove entry
+      validations:
+          required: true
+
+    - type: dropdown
+      id: implementation-type
+      attributes:
+          label: Implementation Type
+          description: What type of implementation is this?
+          options:
+              - Backend (server)
+              - Frontend (client)
+              - SDK / Library
+              - Tooling / CLI
+              - Other
+      validations:
+          required: true
+
+    - type: input
+      id: name
+      attributes:
+          label: Implementation Name
+          description: Name of the implementation as it should appear in REGISTRY.md
+          placeholder: Example OMSS Backend
+      validations:
+          required: true
+
+    - type: input
+      id: repo-url
+      attributes:
+          label: Repository or Project URL
+          description: Link to the canonical project page (GitHub, GitLab, website, etc.)
+          placeholder: https://github.com/example/example-omss-backend
+      validations:
+          required: true
+
+    - type: input
+      id: maintainer
+      attributes:
+          label: Maintainer / Contact
+          description: Name and/or handle of the maintainer or owning organization
+          placeholder: '@example-maintainer (Example Org)'
+      validations:
+          required: true
+
+    - type: dropdown
+      id: omss-version
+      attributes:
+          label: OMSS Version Support
+          description: Which OMSS versions does this implementation target?
+          options:
+              - v1.1 (latest)
+              - v1.0
+          multiple: true
+      validations:
+          required: true
+
+    - type: input
+      id: license
+      attributes:
+          label: License
+          description: Project license identifier (e.g., MIT, Apache-2.0, GPL-3.0)
+          placeholder: MIT
+      validations:
+          required: true
+
+    - type: textarea
+      id: existing-entry
+      attributes:
+          label: Existing Entry (for updates/removals)
+          description: If updating or removing, paste the current REGISTRY.md entry or describe it
+          placeholder: Current entry text or a clear description of which entry to change.
+      validations:
+          required: false
+
+    - type: checkboxes
+      id: checklist
+      attributes:
+          label: Pre-submission Checklist
+          options:
+              - label: I confirm that this implementation aims to follow the OMSS specification
+                required: true
+              - label: I have verified that the repository/project URL is correct and publicly accessible
+                required: true
+              - label: I agree to follow this project's [Code of Conduct](https://github.com/omss-spec/omss-spec/blob/main/CODE_OF_CONDUCT.md)
+                required: true
+              - label: I understand that maintainers and/or administrators may decline or request changes to this entry without further explanation. You always have the right to remove your entry if you disagree with any decisions.
+                required: true
