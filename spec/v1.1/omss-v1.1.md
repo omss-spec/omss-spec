@@ -254,6 +254,13 @@ GET /v1
 
 ### 4.2 Movie Sources
 
+> [!CAUTION]
+> This endpoint is sunset as of OMSS v1.1 and will be removed in the next major version of the specification.
+>
+> Clients SHOULD migrate to the replacement endpoint defined by OMSS v2 once available.
+>
+> Backends implementing OMSS v1.x MUST continue to support this endpoint for the lifetime of the v1 specification.
+
 **Purpose**: Retrieve movie streaming sources by TMDB ID.
 
 ```http
@@ -286,6 +293,13 @@ GET /v1/movies/155?filter=quality>=HD
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
 
 ### 4.3 TV Episode Sources
+
+> [!CAUTION]
+> This endpoint is sunset as of OMSS v1.1 and will be removed in the next major version of the specification.
+>
+> Clients SHOULD migrate to the replacement endpoint defined by OMSS v2 once available.
+>
+> Backends implementing OMSS v1.x MUST continue to support this endpoint for the lifetime of the v1 specification.
 
 **Purpose**: Retrieve TV episode streaming sources.
 
@@ -320,11 +334,18 @@ GET /v1/tv/1396/seasons/1/episodes/1?filter=quality=in=(HD,FHD,4K)
 
 **Response: 200 OK** (see [6.1 Success Response](#61-success-response))
 
-### 4.4 Proxy Endpoint (deprecated)
+### 4.4 Proxy Endpoint (sunset)
 
 In previous versions of OMSS, the spec used to dictate the proxy behaviour. Starting v1.1, that isn't the case anymore. It is up to the backend to decide how to/if it wants to implement the proxy.
 
 ### 4.5 Refresh Endpoint
+
+> [!CAUTION]
+> This endpoint is sunset as of OMSS v1.1 and will be removed in the next major version of the specification.
+>
+> Clients SHOULD migrate to the replacement endpoint defined by OMSS v2 once available.
+>
+> Backends implementing OMSS v1.x MUST continue to support this endpoint for the lifetime of the v1 specification.
 
 **Purpose**: Unified endpoint to refresh a response by its id.
 
